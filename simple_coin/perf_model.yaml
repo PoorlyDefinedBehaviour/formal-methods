@@ -1,0 +1,11 @@
+configs:
+  Toss.head:
+    probability: 0.5
+    counters:
+      points:
+        numeric: 2
+  Toss.tail:
+    probability: 0.5
+    counters:
+      points:
+        numeric: 1

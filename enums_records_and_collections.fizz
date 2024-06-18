@@ -1,0 +1,67 @@
+// Enums are just strings.
+Color = enum("RED", "YELLOW", "GREEN")
+
+action Init:
+  color = Color.RED
+
+action Next:
+  if color == Color.RED
+    color = Color.GREEN
+  elif: color == Color.GREEN:
+    color = Color.YELLOW
+  else:
+    color = Color.Red
+
+action IterOverEnum:
+  any c in dir(Color):
+    color = c
+
+msg = record(node=5, color=Color.RED, message="hello")
+
+// Access fields.
+msg.node
+
+msg.color = Color.GREEN
+
+// Immutable struct
+msg = struct(node=5, color=Color.RED, message="hello")
+// This will throw an error.
+msg.node = 10
+
+list = [1, 2, 3]
+list[0] = 4
+
+s = set([1, 2, 2])
+len(s) // 2
+
+s.add(4)
+len(s) // 3
+
+s.remove(2)
+len(s) // 2
+
+d = {1: 'one', 2: 'two'}
+d[1] = 'uno'
+
+s = genericset()
+s.add({'status': 'working', 'id': 1})
+s.add({'status': 'pending', 'id': 2})
+
+len(s) // 2
+
+s.add({'status': 'working', 'id': 1})
+
+len(s) // 2
+
+d = genericmap()
+d[{'status': 'working', 'id': 1}] = 'one'
+d[{'status': 'pending', 'id': 2}] = 'two'
+
+b = bag()
+b.add(1)
+b.add(2)
+b.add(2)
+len(b) // 3
+
+print(b == bag([2, 1, 2])) // true
+print(b == bag([2, 1])) // false

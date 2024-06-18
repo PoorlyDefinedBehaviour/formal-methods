@@ -1,0 +1,50 @@
+// Guard clauses are the predicates that tell whether an action/transition is allowed or anot.
+action Init:
+  switch = "OFF"
+
+// Deadlocks are switch is set to "ON" because no other action can be taken.
+atomic action On:
+  // If is a implicit guard clause.
+  if switch != "ON":
+    switch = "ON"
+
+// Nested guard clauses
+action Init:
+  has_even = False
+
+atomic action FindEven:
+  for x in [1, 3, 5]:
+    if x % 2 == 0:
+      has_even = True
+
+// require aborts the current fork if condition is not satisfied.
+action Init:
+  switch = "OFF"
+
+atomic action On:
+  require switch != "ON"
+  switch = "ON"
+
+atomic action Off:
+  require switch != "OFF"
+  switch = "OFF"
+
+
+// Guard clauses with fairness
+eventually always assertion SafelyShutdown:
+  return status == "shutdown"
+
+action Init:
+  status = "idle"
+
+atomic action Process:
+  if status == "idle":
+    status = "working"
+
+atomic fair action Finish:
+  if status == "working":
+    status = "idle"
+
+atomic fair<strong> action Shutdown:
+  if status != "working":
+    status = "shutdown"

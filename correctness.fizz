@@ -1,0 +1,32 @@
+// Types of correctness:
+// 
+// Safety: Something bad never happens.
+// Liveness: Something good eventually happens.
+
+// Safety is specified using the `always` keyword.
+always assertion AlwaysLessThan3:
+  return value <= 3
+
+// Liveness is specified using the `eventually` keyword.
+always eventually assertion AlwaysEventuallyGetsSetToZero:
+  return value == 0
+
+eventually always assertion EventuallyAlwaysBetweenZeroAndThree:
+  return value >=0  and value <= 3
+
+// Example: Counter that increments by 1 until it reaches 3, then resets to 0.
+// Starting value can be in the range(-2, 2) that is oneof [-1, -1, 0, 1].
+action Init:
+  value = 0
+  any x in range(-2, 2):
+    value = x
+
+// Add the "fair" keyword to ensure the action is executed. 
+// Withou the keyword, the model can stop after executing the Init action.
+atomic fair action Add:
+  if value < 3:
+    value += 1
+  else:
+    value = 0
+
+

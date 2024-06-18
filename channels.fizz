@@ -1,0 +1,49 @@
+// ## Default channels
+
+role Sender:
+  action Init:
+    self.state = "init"
+
+  action Send:
+    if self.state != "init":
+      return
+    self.state = "calling"
+    res = r.process()
+    self.state = "done"
+
+role Receiver:
+  func process():
+    self.state = "done"
+
+action Init:
+  r = Receiver()
+  s = Sender()
+
+action NoOp:
+  pass
+
+// ## Custom channels
+
+NonBlockingFifo = Channel(ordering="ordered", delivery="atleast_once", blocking="fire_and_forget")
+
+role Sender:
+  action Init:
+    self.state = "init"
+
+  action Send:
+    if self.state != "init":
+      return
+    self.state = "calling"
+    r.process()
+    self.state = "done"
+
+role Receiver:
+  func process():
+    self.state = "done"
+
+action Init:
+  r = NonBlockingFifo(Receiver())
+  s = Sender()
+
+action NoOp:
+  pass

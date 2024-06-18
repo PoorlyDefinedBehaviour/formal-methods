@@ -1,0 +1,76 @@
+Status = enum("INIT", "DONE")
+
+role Node:
+  action Init:
+    self.status = Status.INIT
+
+  action Done:
+    self.status = Status.DONE
+    done.add(self.NAME)
+
+action Init:
+  n1 = Node(NAME=1)
+  n2 = Node(NAME=2)
+  done = set()
+
+// ## Unique ID for each role instance
+NUM_ROLES = 3
+
+role Node:
+  action Init:
+    self.status = Status.INIT
+
+  atomic action Done:
+    self.status = Status.DONE
+    done.add(self.__id__)
+
+action Init:
+  nodes = []
+  for i in range(0, NUM_ROLES):
+    nodes.add(Node())
+  done = set()
+
+// ## Functions
+
+role Node:
+  action Init:
+    self.status = Status.INIT
+
+  atomic action Done():
+    self.done()
+
+  atomic func done():
+    self.status = Status.DONE
+    done.add(self.NAME)
+
+action Init:
+  done = set()
+  n1 = Node(Name=1)
+  n2 = Node(Name=2)
+
+// ## Dynamic role creation and deletion
+MIN_NODES=1
+MAX_NODES=2
+
+role Node:
+  action Init:
+    self.status = Status.INIT
+  
+  atomic action Done:
+    self.status = Status.DONE
+    done.add(self.ID)
+
+action Init:
+  nodes = []
+  for i in range(0, MIN_NODES):
+    n = Node(ID=i)
+    nodes.append(n)
+  done = set()
+
+atomic action AdNode:
+  if len(nodes) < MAX_NODES:
+    n = Node(ID=len(nodes))
+    nodes.append(n)
+
+atomic action RemoveNode:
+  nodes = nodes[0:len(nodes)-1]

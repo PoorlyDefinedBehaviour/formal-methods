@@ -1,0 +1,114 @@
+// ## Unordered and exactly once
+
+action Init:
+  msgs = genericset()
+
+atomic action Send:
+  msgs.add(record(score=5, message="Hello"))
+
+atomic fair action Receive:
+  any msg in msgs:
+    process(msg)
+    msgs.remove(msg)
+
+atomic func process(msg):
+  pass
+
+// ## Unordered and at most once
+
+action Init:
+  msgs = genericset()
+
+atomic action Send:
+  msgs.add(record(score=5, message="Hello"))
+
+atomic action Drop:
+  any msgs in msgs:
+    msgs.remove(msg)
+
+atomic fair action Receive:
+  any msgs in msgs:
+    process(msg)
+    msgs.remove(msg)
+
+atomic func process(msg):
+  pass
+
+// ## Unordered and at least once
+
+action Init:
+  msgs = genericset()
+
+atomic action Send:
+  msgs.add(record(score=5, message="Hello"))
+
+atomic fair action Receive:
+  any msg in msgs:
+    process(msg)
+
+atomic func process(msg):
+  pass
+
+// ## Unordered, exactly-once without deduplication
+
+action Init:
+  msgs = bag()
+
+atomic action Send:
+  msgs.add(record(score=5, message="Hello"))
+
+atomic fair action Receive:
+  any msg in msgs:
+    process(msg)
+    msgs.remove(msg)
+
+atomic func process(msg):
+  pass
+
+// ## Ordered and exactly once
+
+action Init:
+  sqs_fifo = []
+  kafka_topic = []
+  kafka_client_offset = -1
+
+atomic action Send:
+  sqs_fifo.append(record(score=5, message="Hello"))
+  kafka_topic.append(record(score=5, message="Hello"))
+
+atomic fair action ReceiveSQS:
+  if sqs_fifo:
+    process(sqs_fifo.pop(0))
+
+atomic fair action ReceiveKafka:
+  if kafka_client_offset < len(kafka_topic):
+    kafka_client_offset += 1
+    process(kafka_topic[kafka_client_offset])
+
+atomic func process(msg):
+  pass
+
+// ## Ordered and at least once
+
+action Init:
+  sqs_fifo = []
+  kafka_topic = []
+  kafka_client_offset = -1
+
+atomic action Send:
+  sqs_fifo.append(record(score=5, message="Hello"))
+  kafka_topic.append(record(score=5, message="Hello"))
+
+atomic fair action ReceiveSQS:
+  if sqs_fifo:
+    process(sqs_fifo[0])
+    oneof:
+      sqs_fifo.pop(0)
+      pass # Do nothing, don't remove the message.
+
+atomic fair action ReceiveKafka:
+  if kafka_topic:
+    process(kafka_topic[kafka_client_offset+1])
+    oneof:
+      kafka_client_offset += 1
+      pass # Do nothing, don't increment the offset

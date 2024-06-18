@@ -1,0 +1,4 @@
+action Toss:
+  oneof:
+    `head` return "head"
+    `tail` return "tail"

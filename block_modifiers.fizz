@@ -1,0 +1,64 @@
+// Atomic
+// 
+// An atomic block is executed as a single step without any yields points in between.
+action Init:
+  a = 0
+  b = 0
+
+action Add:
+  atomic:
+    a = (a + 1) % 3
+    b = (b + 1) % 3
+
+// Same as above.
+atomic action Add:
+  a = (a + 1) % 3
+  b = (b + 1) % 3
+
+
+// Oneof
+// 
+// Oneof indicates that only one of the statements in the block will be executed.
+action Init:
+  a = 0
+  b = 0
+
+action Add:
+  oneof:
+    a = (a + 1) % 3
+    b = (b + 1) % 3
+
+// Serial
+// 
+// Serial block modifier indicates that the steps will be executed in sequence.
+// The will be an implicit yield point between each step.
+// Concurrent actions can be interleaved.
+// System can crash between steps.
+action Init:
+  a = 0
+  b = 0
+
+action Add:
+  serial:
+    a = (a + 1) % 3
+    b = (b + 1) % 3
+
+// Parallel
+// 
+// Indicates the steps will be executed in parallel.
+// There is an implicit yield point between steps.
+// Concurrent actions can be interleaved.
+// System can crash between between steps.
+// If there are two statements -- a and b -- the model checker will explore:
+// [a]
+// [b]
+// [a, b]
+// [b, a]
+action Init:
+  a = 0
+  b = 0
+
+action Add:
+  parallel:
+    a = (a + 1) % 3
+    b = (b + 1) % 3

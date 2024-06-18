@@ -1,0 +1,16 @@
+atomic action Lookup:
+  cached = LookupCache()
+  if cached == "hit":
+    return cached
+  found = LookupDB()
+  return found
+
+func LookupCache():
+  oneof:
+    `hit` return "hit"
+    `miss` return "miss"
+
+func LookupDB():
+  oneof:
+    `found` return "found"
+    `notfound` return "notfound" 

@@ -1,0 +1,28 @@
+KEYS = symmetric_values('k', 3)
+
+action Init:
+  switches = {}
+  for k in KEYS:
+    switches[k] = "OFF"
+
+atomic action On:
+  any k in KEYS:
+    switches[k] = "ON"
+
+Status = enum("INIT", "DONE")
+
+NUM_ROLES=5
+
+symmetric role Node:
+  action Init:
+    self.status = Status.INIT
+
+  atomic action Done:
+    self.status = Status.DONE
+    done.add(self.__id__)
+
+action Init:
+  nodes = bag()
+  for i in range(0, NUM_ROLES):
+    nodes.add(Node())
+  done = set()

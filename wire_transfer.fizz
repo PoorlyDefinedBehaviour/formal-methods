@@ -1,0 +1,48 @@
+// Safety: conditions that must always be true
+// Liveness: conditions that must eventually become true
+// Stability: conditions that must eventually become true and remain true
+
+// ## Atomic money transfer
+
+// The sum of the balance of the accounts must equal 5.
+always assertion BalanceMatchTotal:
+  total = 0
+  for balance in balances.values():
+    total += balance
+  return total == 5
+
+action Init:
+  balances = {'Alice': 3, 'Bob': 2}
+
+atomic action FundTransfer:
+  any amount in range(0, 100):
+    if balances['Alice'] >= amount:
+      balances['Alice'] -= amount
+      balances['Bob'] += amount
+
+// ## Non atomic money transfer
+
+// The sum of the balance of the accounts must equal 5 eventually.
+always eventually assertion BalanceMatchTotal:
+  total = 0
+  for balance in balances.values():
+    total += balance
+  return total == 5
+
+action Init:
+  balances = {'Alice': 3, 'Bob': 2}
+  wire_requests = []
+
+atomic action Wire:
+  any amount in range(1, 10):
+    if balances['Alice'] >= amount:
+      balances['Alice'] -= amount
+      wire_requests.append(('Alice', 'Bob', amount))
+
+atomic fair action DepositWireTransfer:
+  any req in wire_requests:
+    balances[req[1]] += req[2]
+    wire_requests.remove(req)
+
+atomic action NoOp:
+  pass

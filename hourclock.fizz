@@ -1,0 +1,8 @@
+action Init:
+  hour = 1
+
+atomic action Tick:
+  if hour == 12:
+    hour = 1
+  else :
+    hour += 1

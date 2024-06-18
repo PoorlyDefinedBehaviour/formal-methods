@@ -1,0 +1,31 @@
+// Check for liveness condition that the system will be in ‘working’ eventually.
+always eventually assertion SystemReachesWorkingState:
+  return state == "working"
+
+// The system starts in an idle state, and when there is work, it gets to work.
+action Init:
+  state ="idle"
+
+// when there is work, it gets to work.
+atomic fair<strong> action StartWorking:
+  if state == "idle":
+    state = "working"
+
+// The system can be shutdown when it is idle.
+atomic fair<strong> action Shutdown:
+  if state == "idle":
+    state = "shutdown"
+
+// The failed system will be fixed eventually, on fixing, it gets to idle state
+atomic fair action FixFailedSystem:
+  if state == "failed":
+    state = "idle"
+
+atomic action Fail:
+  if state != "failed" and state != "shutdown":
+    state = "failed"
+
+// A shutdown system will be restarted eventually
+fair<strong> action Restart:
+  if state == "shutdown":
+    state = "idle"
