@@ -1,0 +1,61 @@
+always assertion ResMgrsConsistent:
+  for p1 in participants:
+    for p2 in participants:
+      if participants[p1] == "committed" and participants[p2] == "aborted":
+        return False
+  return True
+
+action Init:
+  manager = "init"
+  participants = {1: "init", 2: "init"}
+  prepared = set([])
+
+action TransactionManagerWrite:
+  if manager != "init":
+    return
+  else:
+    manager = "working"
+
+  # parallel means things can execution can happen in any order.
+  parallel for participant in participants.keys():
+    serial:
+      vote = ""
+      atomic:
+        vote = participantPrepare(participant)
+
+      if vote == "prepared":
+        prepared.add(participant)
+      elif vote == "aborted":
+        atomic:
+          managerAbort()
+        return
+  if len(prepared) == len(participants):
+    atomic:
+      managerCommit()
+
+func participantPrepare(participant):
+  oneof:
+    participants[participant] = "prepared"
+    participants[participant] = "aborted"
+  return participants[participant]
+
+func participantAbort(participant):
+  participants[participant] = "aborted"
+
+func participantCommit(participant):
+  participants[participant] = "committed"
+
+func managerAbort():
+  manager = "aborted"
+  parallel for participant in participants.keys():
+    atomic:
+      participantAbort(participant)
+
+func managerCommit():
+  manager = "commited"
+  parallel for participant in participants.keys():
+    atomic:
+      participantCommit(participant)
+
+action NoOp:
+  pass
