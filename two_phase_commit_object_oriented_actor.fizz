@@ -1,0 +1,88 @@
+always assertion ResMgrsConsistent:
+  for p1 in participants:
+    for p2 in participants:
+      if p1.state == "committed" and p2.state == "aborted":
+        return False
+  return True
+
+eventually always assertion Terminated:
+  return coordinator.state in ("committed", "aborted")
+
+role Participant:
+  action Init:
+    self.state = "working"
+
+  fair action Timeout:
+    if self.state == "working":
+      self.state = "aborted"
+
+  action Terminated:
+    if self.state == "committed":
+      pass
+
+  func Prepare():
+    if self.state != "working":
+      return self.state
+    
+    oneof:
+      self.state = "prepared"
+      self.state = "aborted"
+
+    return self.state
+
+  func Commit():
+    self.state = "committed"
+
+  func Abort():
+    self.state = "aborted"
+
+role Coordinator:
+  action Init:
+    self.prepared = set()
+    self.state = "init"
+    
+  action Write:
+    if self.state != "init":
+      return
+
+    self.state = "working"
+
+    for p in self.PARTICIPANTS:
+      vote = p.Prepare()
+
+      if vote == 'aborted':
+        self.Abort()
+        return
+
+      self.prepared.add(p.ID)
+    
+    self.Commit()
+  
+  fair action Timeout:
+    if self.state != "committed":
+      self.Abort()
+
+  fair action Restart:
+    if self.state == "committed":
+      for p in self.PARTICIPANTS:
+        p.Commit()
+
+  func Abort():
+    self.state = "aborted"
+    for p in self.PARTICIPANTS:
+      p.Abort()
+
+  func Commit():
+    if self.state == 'working' and len(self.prepared) == len(self.PARTICIPANTS):
+      self.state = 'committed'
+      for rm in self.PARTICIPANTS:
+        rm.Commit()
+
+action Init:
+  participants = []
+
+  for i in range(3):
+    p = Participant(ID=i)
+    participants.append(p)
+
+  coordinator = Coordinator(PARTICIPANTS=participants)
