@@ -1,0 +1,57 @@
+# Not possible to prove liveness because of FLP impossibility.
+# Can prove safety though.
+
+always assertion ResMgrsConsistent:
+  for p1 in participants:
+    for p2 in participants:
+      if participants[p1] == "committed" and participants[p2] == "aborted":
+        return False
+  return True
+
+action Init:
+  # Transaction manager state.
+  manager = "init"
+  # The state of the participants.
+  participants = {1: "working", 2: "working", 3: "working"}
+
+  # Set of participants that have responded with Prepared.
+  tmPrepared = set([])
+
+  # Set of all messages in the system.
+  msgs = set([])
+
+atomic action RMPrepare:
+  any rm in participants:
+    if participants[rm] == "working":
+      participants[rm] = "prepared"
+      msgs.add(("Prepared", rm))
+
+atomic action RMChooseToAbort:
+  any rm in participants:
+    if participants[rm] == "working":
+      participants[rm] = "aborted"
+
+atomic action TMRcvPrepared:
+  any rm in participants:
+    if manager == "init" and ("Prepared", rm) in msgs:
+      tmPrepared.add(rm)
+
+atomic action TMAbort:
+  if manager == "init":
+    manager = "aborted"
+    msgs.add(("Abort"))
+
+atomic action TMCommit:
+  if manager == "init" and len(tmPrepared) == len(participants):
+    manager = "committed"
+    msgs.add(("Commit"))
+
+atomic action RMRcvCommitMsg:
+  any rm in participants:
+    if ("Commit") in msgs:
+      participants[rm] = "commited"
+
+atomic action RMRcvAbortMsg:
+  any rm in participants:
+    if ("Abort") in msgs:
+      participants[rm] = "aborted"
