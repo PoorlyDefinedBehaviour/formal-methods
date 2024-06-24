@@ -1,0 +1,44 @@
+# https://fizzbee.io/posts/pseudocode-modelchecking/
+
+atomic func lcs(b):
+    n = len(b)
+    f = [-1] * (2 * n)
+    k = 0
+    for j in range(1, 2 * n):
+        i = f[j - k - 1]
+        while b[j % n] != b[(k + i + 1) % n] and i != -1:
+            if b[j % n] < b[(k + i + 1) % n]:
+                k = j - i - 1
+            i = f[i]
+        if b[j % n] != b[(k + i + 1) % n] and i == -1:
+            if b[j % n] < b[(k + i + 1) % n]:
+                k = j
+            f[j - k] = -1
+        else:
+            f[j - k] = i + 1
+    return k
+
+always assertion LcsNaiveMatchLcs:
+  expected = naiveLcs(input)
+  actual = lcs(input)
+  return expected == actual
+
+atomic func naiveLcs(s):
+  n = len(s)
+  if n == 0:
+    return 0
+  rotations = [s[i:] + s[:i] for in range(n)]
+  leastRotation = min(rotations)
+  return rotations.index(leastRotation)
+
+action Init:
+  CHARSET = [0, 1]
+
+  input = ""
+
+atomic action Next:
+  any c in CHARSET:
+    input += str(c)
+
+action NoOp:
+  pass
