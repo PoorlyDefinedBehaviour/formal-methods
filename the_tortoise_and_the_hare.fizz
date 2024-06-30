@@ -1,0 +1,56 @@
+always assertion FindsCycle:
+  hasCycle1 = findCycleByKeepingVisitedSet()
+  hasCycle2 = tortoiseAndHare()
+  return hasCycle1 == hasCycle2
+
+action Init:
+  nodes = range(1, 5)
+
+  succ = {}
+  for node in nodes:
+    # The successor of the current node is either:
+    oneof:
+      # Any node including the node itself.
+      atomic:
+        next = any nodes 
+        succ[node] = next
+      # Or None which means there's no successor.
+      succ[node] = None
+
+  start = any nodes
+
+atomic func findCycleByKeepingVisitedSet():
+  current = start
+
+  visited = set()
+
+  while current != None:
+    if current in visited:
+      return True
+    visited.add(current)
+    current = succ[current]
+
+  return False
+
+atomic func tortoiseAndHare():
+  tortoise = start
+  hare = start
+
+  while True:
+    # If the slow pointer has not reached the end of the list. Advance it by 1.
+    if tortoise != None:
+      tortoise = succ[tortoise]
+
+    # Advance the fast pointer by 2.
+    for _ in range(0, 2):
+      if hare != None:
+        hare = succ[hare]
+          
+    if tortoise == None and hare == None:
+      return False
+      
+    if tortoise == hare:
+      return True
+
+action NoOp:
+    pass
