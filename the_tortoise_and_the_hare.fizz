@@ -4,20 +4,34 @@ always assertion FindsCycle:
   return hasCycle1 == hasCycle2
 
 action Init:
-  nodes = range(1, 5)
-
-  succ = {}
-  for node in nodes:
-    # The successor of the current node is either:
-    oneof:
-      # Any node including the node itself.
-      atomic:
-        next = any nodes 
-        succ[node] = next
-      # Or None which means there's no successor.
-      succ[node] = None
+  nodes = range(1, 4)
 
   start = any nodes
+
+  succ = {}
+  previous = None
+
+  for node in nodes:
+    # The previous node always points to the current node.
+    if previous != None:
+      succ[previous] = node
+      
+    # The current node either points to:
+    # None
+    # Itself
+    # Another node that's already in the list
+    oneof:
+      succ[node] = None
+      succ[node] = node
+      atomic:
+        nodesInThelist = succ.keys()
+        next = any nodesInThelist
+        succ[node] = next
+    
+    previous = node
+
+  print("succ", succ)
+  
 
 atomic func findCycleByKeepingVisitedSet():
   current = start
@@ -28,7 +42,7 @@ atomic func findCycleByKeepingVisitedSet():
     if current in visited:
       return True
     visited.add(current)
-    current = succ[current]
+    current = succ.get(current)
 
   return False
 
@@ -39,12 +53,12 @@ atomic func tortoiseAndHare():
   while True:
     # If the slow pointer has not reached the end of the list. Advance it by 1.
     if tortoise != None:
-      tortoise = succ[tortoise]
+      tortoise = succ.get(tortoise)
 
     # Advance the fast pointer by 2.
     for _ in range(0, 2):
       if hare != None:
-        hare = succ[hare]
+        hare = succ.get(hare)
           
     if tortoise == None and hare == None:
       return False
