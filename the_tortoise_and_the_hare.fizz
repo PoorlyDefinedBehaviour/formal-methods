@@ -64,7 +64,7 @@ atomic func tortoiseAndHare():
       if hare != None:
         hare = succ.get(hare)
           
-    if tortoise == None and hare == None:
+    if tortoise == None or hare == None:
       return False
       
     if tortoise == hare:
