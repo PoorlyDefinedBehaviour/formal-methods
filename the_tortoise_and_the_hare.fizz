@@ -1,43 +1,28 @@
+POSSIBLE_NODES = list(range(1, 4))
+
 always assertion FindsCycle:
-  hasCycle1 = findCycleByKeepingVisitedSet()
-  hasCycle2 = tortoiseAndHare()
-  return hasCycle == hasCycle1 and hasCycle == hasCycle2
+  has_cycle_1 = find_cycle_by_keeping_visited_set()
+  has_cycle_2 = tortoise_and_hare()
+  return has_cycle == has_cycle_1 and has_cycle == has_cycle_2
 
 action Init:
-  hasCycle = False
-
-  possibleNodes = range(1, 4)
-
-  current = any possibleNodes
-
   # A dict from node to its successor.
   # Example: {1: 2, 2: 3, 3: None}
   succ = {}
-
-  while True:
-    # The current node points to either:
-    oneof:
-      # None, which means the current pointer is the last one in the list.
-      atomic: 
-        succ[current] = None 
-        break
-      # Any other node, including itself.
-      atomic:
-        next = any possibleNodes
-        succ[current] = next
-        # If the current node is now pointing to a node that's already in the list,
-        # a cycle has been created, we can exit the loop.
-        if next in succ:
-          hasCycle = True
-          break
-        succ[next] = None
-        current = next
+  current = any POSSIBLE_NODES
+  has_cycle = False
+  while (current and not has_cycle):
+    next = any list(POSSIBLE_NODES) + [None]
+    succ[current] = next  
+      
+    has_cycle = next in succ
+    current = next  
 
   nodes = succ.keys()
   start = any nodes
-  print("succ", succ, "nodes",  nodes, "hasCycle", hasCycle)
+  print(succ)
 
-atomic func findCycleByKeepingVisitedSet():
+atomic func find_cycle_by_keeping_visited_set():
   current = start
 
   visited = set()
@@ -50,7 +35,7 @@ atomic func findCycleByKeepingVisitedSet():
 
   return False
 
-atomic func tortoiseAndHare():
+atomic func tortoise_and_hare():
   tortoise = start
   hare = start
 
