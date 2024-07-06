@@ -1,9 +1,12 @@
 POSSIBLE_NODES = list(range(1, 4))
 
-always assertion FindsCycle:
-  has_cycle_1 = find_cycle_by_keeping_visited_set()
-  has_cycle_2 = tortoise_and_hare()
-  return has_cycle == has_cycle_1 and has_cycle == has_cycle_2
+always assertion TortoiseAndHareFindsCycle:
+  found = tortoise_and_hare()
+  return has_cycle == found
+
+always assertion VisitedSetFindsCycle:
+  found = find_cycle_by_keeping_visited_set()
+  return has_cycle == found
 
 action Init:
   # A dict from node to its successor.
@@ -12,7 +15,7 @@ action Init:
   current = any POSSIBLE_NODES
   has_cycle = False
   while (current and not has_cycle):
-    next = any list(POSSIBLE_NODES) + [None]
+    next = any POSSIBLE_NODES + [None]
     succ[current] = next  
       
     has_cycle = next in succ
