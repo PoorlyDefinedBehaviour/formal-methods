@@ -1,0 +1,108 @@
+NUM_NODES = 3
+MAJORITY = NUM_NODES//2+1
+
+eventually always assertion Correctness:
+  v = nodes[0].accepted_value
+  for node in nodes:
+    if node.accepted_value != v:
+      return False
+  return True
+
+role Node:
+  action Init:
+    self.proposer_id = None
+    self.proposal_id = 0
+    self.max_proposal_id = 0
+    self.accepted_proposal_id = None
+    self.accepted_value = None
+
+  action Prepare:
+    proposal_id = None    
+    value = "hello world"
+
+    atomic:
+      n = self.next_proposal_id()
+      proposal_id = n
+
+    # TODO: store on disk
+
+    success_count = 0
+    accepted_proposal = None
+    for node in nodes:
+      response = node.on_prepare(self.id, proposal_id)
+      if response == None:
+        continue
+      if response["success"]:
+        success_count += 1
+      if response["accepted_value"] and (not accepted_proposal or accepted_proposal["accepted_proposal_id"] < response["accepted_proposal_id"]):
+        accepted_proposal = response
+
+    if success_count < MAJORITY:  
+      return 
+    
+    proposal = record(id=proposal_id, value=value)
+    if accepted_proposal:
+      proposal.value = accepted_proposal["accepted_value"]
+
+    success_count = 0
+    for node in nodes:
+      response = node.on_propose(self.id, proposal.id, proposal.value)
+      if response == None:
+        continue
+      if response["success"]:
+        success_count += 1
+
+    if success_count >= MAJORITY:
+        print("done")
+
+  atomic func next_proposal_id():
+    v = self.proposal_id
+    return v
+
+  atomic func on_prepare(proposer_id, proposal_id):
+    if proposal_id < self.max_proposal_id:
+       return {
+         "success": False,
+         "proposal_id": self.max_proposal_id, 
+         "accepted_proposal_id": self.accepted_proposal_id,
+         "accepted_value": self.accepted_value,
+       }
+    if proposal_id == self.max_proposal_id and proposer_id <= self.id:
+       return {
+          "success": False,
+          "proposal_id": self.max_proposal_id, 
+          "accepted_proposal_id": self.accepted_proposal_id,
+          "accepted_value": self.accepted_value,
+       }
+
+    # TODO: store max proposal number on disk.
+    self.proposer_id = proposer_id
+    self.max_proposal_id = proposal_id
+
+    return {
+      "success": True,
+      "proposal_id": self.max_proposal_id, 
+      "accepted_proposal_id": self.accepted_proposal_id,
+      "accepted_value": self.accepted_value,
+     }
+
+  atomic func on_propose(proposer_id, proposal_id, value):
+    if self.proposer_id != proposer_id or proposal_id != self.max_proposal_id:
+        return {
+           "success": False,
+           "proposal_id": self.max_proposal_id, 
+           "accepted_proposal_id": self.accepted_proposal_id,
+           "accepted_value": self.accepted_value,
+       }
+
+    # TOOD: store accepted value and proposal number on disk
+    self.accepted_proposal_id = proposal_id
+    self.accepted_value = value
+
+action Init:
+  nodes = []
+  for i in range(1, NUM_NODES+1):
+    nodes.append(Node(id=i))
+
+action NoOp:
+  pass
