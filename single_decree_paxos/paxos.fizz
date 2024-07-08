@@ -1,103 +1,118 @@
 NUM_NODES = 3
 MAJORITY = NUM_NODES//2+1
+DECIDED_VALUE = None
 
+# All non failed nodes eventually decide on the same value.
 eventually always assertion Correctness:
-  v = nodes[0].accepted_value
-  for node in nodes:
-    if node.accepted_value != v:
-      return False
+  non_failed_nodes = [node for node in nodes if node.state == "running"]
+
+  accepted_value_count = {}
+
+  for node in non_failed_nodes:
+    if node.storage.accepted_value != None:
+      accepted_value_count[node.storage.accepted_value] = accepted_value_count.get(node.storage.accepted_value, 0) + 1
+  
+  for value in accepted_value_count.keys():
+    if accepted_value_count[value] >= MAJORITY:
+      DECIDED_VALUE = value
+  if DECIDED_VALUE != None:
+    print("DECIDED_VALUE", DECIDED_VALUE)
   return True
 
 role Node:
   action Init:
-    self.proposer_id = None
-    self.proposal_id = 0
-    self.max_proposal_id = 0
-    self.accepted_proposal_id = None
-    self.accepted_value = None
+    self.storage = record(
+      proposal_id=0, 
+      max_proposal_id=0, 
+      accepted_proposal_id=None, 
+      accepted_value = None
+    )
+    self.state = "running"
+
+  atomic action Crash:
+    self.state = "crashed"
+
+  atomic fair<strong> action Restart:
+    self.state = "running"
 
   action Prepare:
-    proposal_id = None    
-    value = "hello world"
+    if self.state != "running":
+      return
 
+    value = "value from node {}".format(self.id)
+    proposal_id = None
     atomic:
       n = self.next_proposal_id()
       proposal_id = n
 
-    # TODO: store on disk
+    result = self.broadcast_prepare(proposal_id)
 
-    success_count = 0
-    accepted_proposal = None
-    for node in nodes:
-      response = node.on_prepare(self.id, proposal_id)
-      if response == None:
-        continue
-      if response["success"]:
-        success_count += 1
-      if response["accepted_value"] and (not accepted_proposal or accepted_proposal["accepted_proposal_id"] < response["accepted_proposal_id"]):
-        accepted_proposal = response
-
-    if success_count < MAJORITY:  
+    if result.promise_count < MAJORITY:  
       return 
     
-    proposal = record(id=proposal_id, value=value)
-    if accepted_proposal:
-      proposal.value = accepted_proposal["accepted_value"]
+    if result.accepted_proposal:
+      # print("action Prepare: result.accepted_proposal", result.accepted_proposal)
+      value = result.accepted_proposal["accepted_value"]
 
-    success_count = 0
+    self.broadcast_propose(proposal_id, value)
+
+  func next_proposal_id():
+    self.storage.proposal_id += 1    
+    return self.storage.proposal_id
+
+  func broadcast_prepare(proposal_id):
+    promise_count = 0
+    accepted_proposal = None
+
     for node in nodes:
-      response = node.on_propose(self.id, proposal.id, proposal.value)
-      if response == None:
+      response = node.on_prepare(proposal_id)
+      if not response:
         continue
-      if response["success"]:
-        success_count += 1
 
-    if success_count >= MAJORITY:
-        print("done")
+      promise_count += 1
+      # print("broadcast_prepare: accpted_value", response["accepted_value"])
+      if response["accepted_value"] and (not accepted_proposal or accepted_proposal["accepted_proposal_id"] < response["accepted_proposal_id"]):
+        # print("found accepted proposal", "node", node.id, response)
+        accepted_proposal = response
 
-  atomic func next_proposal_id():
-    v = self.proposal_id
-    return v
+    return record(promise_count=promise_count, accepted_proposal=accepted_proposal)
 
-  atomic func on_prepare(proposer_id, proposal_id):
-    if proposal_id < self.max_proposal_id:
-       return {
-         "success": False,
-         "proposal_id": self.max_proposal_id, 
-         "accepted_proposal_id": self.accepted_proposal_id,
-         "accepted_value": self.accepted_value,
-       }
-    if proposal_id == self.max_proposal_id and proposer_id <= self.id:
-       return {
-          "success": False,
-          "proposal_id": self.max_proposal_id, 
-          "accepted_proposal_id": self.accepted_proposal_id,
-          "accepted_value": self.accepted_value,
-       }
+  func broadcast_propose(proposal_id, value):
+    for node in nodes:
+      node.on_propose(proposal_id, value)
 
-    # TODO: store max proposal number on disk.
-    self.proposer_id = proposer_id
-    self.max_proposal_id = proposal_id
+  atomic func on_prepare(proposal_id):
+    if self.state != "running":
+      return None
 
+    if proposal_id <= self.storage.max_proposal_id:
+      return None
+
+    self.storage.max_proposal_id = proposal_id
+    
     return {
-      "success": True,
-      "proposal_id": self.max_proposal_id, 
-      "accepted_proposal_id": self.accepted_proposal_id,
-      "accepted_value": self.accepted_value,
+      "proposal_id": self.storage.max_proposal_id, 
+      "accepted_proposal_id": self.storage.accepted_proposal_id,
+      "accepted_value": self.storage.accepted_value,
      }
 
-  atomic func on_propose(proposer_id, proposal_id, value):
-    if self.proposer_id != proposer_id or proposal_id != self.max_proposal_id:
-        return {
-           "success": False,
-           "proposal_id": self.max_proposal_id, 
-           "accepted_proposal_id": self.accepted_proposal_id,
-           "accepted_value": self.accepted_value,
-       }
+  atomic func on_propose(proposal_id, value):
+    if self.state != "running":
+      return None
 
-    # TOOD: store accepted value and proposal number on disk
-    self.accepted_proposal_id = proposal_id
-    self.accepted_value = value
+    if proposal_id != self.storage.max_proposal_id:
+      return None
+
+    self.storage.accepted_proposal_id = proposal_id
+    self.storage.accepted_value = value
+
+    # print("ACCEPTED", "NODE", self.id, "ID", self.storage.accepted_proposal_id, "V", self.storage.accepted_value)
+
+    return {
+      "proposal_id": self.storage.max_proposal_id, 
+      "accepted_proposal_id": self.storage.accepted_proposal_id,
+      "accepted_value": self.storage.accepted_value,
+  }
 
 action Init:
   nodes = []
