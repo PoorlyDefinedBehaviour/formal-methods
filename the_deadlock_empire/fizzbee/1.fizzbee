@@ -1,0 +1,44 @@
+# Boolean Flags Are Enough For Everyone
+# https://deadlockempire.github.io/#T1-Interface
+
+always assertion OnlyOneThreadCanEnterCriticalSectionAtATime:
+    total = 0
+    for balance in accounts.values():
+        total += balance
+    return total == 10
+
+action Init:
+    flag = False
+    accounts = {"Alice": 5, "Bob": 5}
+
+fair<strong> action EnterCriticalSection:
+    while flag:
+        pass
+
+    flag = True
+
+    from_ = None
+    to = None
+    oneof:
+        serial:
+            from_ = "Alice"
+            to = "Bob"
+        serial:
+            from_ = "Bob"
+            to = "Alice"
+    
+    from_balance = accounts[from_]
+    to_balance = accounts[to]
+    amount = 1
+    new_from_balance = from_balance - amount
+    new_to_balance = to_balance + amount
+
+    if from_balance >= amount:
+        atomic:
+            accounts[from_] = new_from_balance
+            accounts[to] += new_to_balance
+
+    flag = False
+
+action NoOp:
+    pass
