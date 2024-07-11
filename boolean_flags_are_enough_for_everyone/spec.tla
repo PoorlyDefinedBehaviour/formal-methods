@@ -1,0 +1,90 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers, FiniteSets
+
+(*--algorithm spec
+variables 
+    threads = 1..2,
+    flag = FALSE,
+    threads_in_criticial_section = {};
+
+define
+    OnlyOneThreadEntersCriticalSection == Cardinality(threads_in_criticial_section) <= 1
+end define;
+
+process Thread \in threads
+begin
+SpinLock:
+    while flag do
+        skip;
+    end while;
+SetFlag:
+    flag := TRUE;
+CriticalSection1:
+    threads_in_criticial_section := threads_in_criticial_section \union {self};
+CriticalSection2:
+    threads_in_criticial_section :=  threads_in_criticial_section \ {self};
+UnsetFlag:
+    flag := FALSE;
+end process;
+
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "6c8822c3" /\ chksum(tla) = "23057dc9")
+VARIABLES threads, flag, threads_in_criticial_section, pc
+
+(* define statement *)
+OnlyOneThreadEntersCriticalSection == Cardinality(threads_in_criticial_section) <= 1
+
+
+vars == << threads, flag, threads_in_criticial_section, pc >>
+
+ProcSet == (threads)
+
+Init == (* Global variables *)
+        /\ threads = 1..2
+        /\ flag = FALSE
+        /\ threads_in_criticial_section = {}
+        /\ pc = [self \in ProcSet |-> "SpinLock"]
+
+SpinLock(self) == /\ pc[self] = "SpinLock"
+                  /\ IF flag
+                        THEN /\ TRUE
+                             /\ pc' = [pc EXCEPT ![self] = "SpinLock"]
+                        ELSE /\ pc' = [pc EXCEPT ![self] = "SetFlag"]
+                  /\ UNCHANGED << threads, flag, threads_in_criticial_section >>
+
+SetFlag(self) == /\ pc[self] = "SetFlag"
+                 /\ flag' = TRUE
+                 /\ pc' = [pc EXCEPT ![self] = "CriticalSection1"]
+                 /\ UNCHANGED << threads, threads_in_criticial_section >>
+
+CriticalSection1(self) == /\ pc[self] = "CriticalSection1"
+                          /\ threads_in_criticial_section' = (threads_in_criticial_section \union {self})
+                          /\ pc' = [pc EXCEPT ![self] = "CriticalSection2"]
+                          /\ UNCHANGED << threads, flag >>
+
+CriticalSection2(self) == /\ pc[self] = "CriticalSection2"
+                          /\ threads_in_criticial_section' = threads_in_criticial_section \ {self}
+                          /\ pc' = [pc EXCEPT ![self] = "UnsetFlag"]
+                          /\ UNCHANGED << threads, flag >>
+
+UnsetFlag(self) == /\ pc[self] = "UnsetFlag"
+                   /\ flag' = FALSE
+                   /\ pc' = [pc EXCEPT ![self] = "Done"]
+                   /\ UNCHANGED << threads, threads_in_criticial_section >>
+
+Thread(self) == SpinLock(self) \/ SetFlag(self) \/ CriticalSection1(self)
+                   \/ CriticalSection2(self) \/ UnsetFlag(self)
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
+Next == (\E self \in threads: Thread(self))
+           \/ Terminating
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(\A self \in ProcSet: pc[self] = "Done")
+
+\* END TRANSLATION 
+====
