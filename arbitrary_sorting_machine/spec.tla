@@ -1,0 +1,90 @@
+---- MODULE spec ----
+EXTENDS TLC, Sequences, Integers
+
+(*--algorithm spec
+variables
+    capacity \in [thrash: 1..10, recycle: 1..10],
+    bins = [thrash |-> <<>>, recycle |-> <<>>],
+    count = [thrash |-> 0, recycle |-> 0],
+    item = [type: {"thrash", "recycle"}, size: 1..6],
+    items \in item \X item \X item \X item,
+    curr = "";
+
+macro add_item(type) begin
+    bins[type] := Append(bins[type], curr);
+    capacity[type] := capacity[type] - curr.size;
+    count[type] := count[type] + 1;
+end macro;
+
+begin
+    \* While items not empty
+    while items /= <<>> do
+        \* Take the first item
+        curr := Head(items);
+        \* Remove the first item from items
+        items := Tail(items);
+
+        \* /\ means AND
+        if curr.type = "recycle" /\ curr.size < capacity.recycle then
+            add_item("recycle");
+        elsif curr.size < capacity.thrash then
+            add_item("thrash");
+        end if;
+    end while;
+
+    assert capacity.thrash >= 0 /\ capacity.recycle >= 0;
+    assert Len(bins.thrash) = count.thrash;
+    assert Len(bins.recycle) = count.recycle;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "903979f7" /\ chksum(tla) = "7c09f734")
+VARIABLES capacity, bins, count, item, items, curr, pc
+
+vars == << capacity, bins, count, item, items, curr, pc >>
+
+Init == (* Global variables *)
+        /\ capacity \in [thrash: 1..10, recycle: 1..10]
+        /\ bins = [thrash |-> <<>>, recycle |-> <<>>]
+        /\ count = [thrash |-> 0, recycle |-> 0]
+        /\ item = [type: {"thrash", "recycle"}, size: 1..6]
+        /\ items \in item \X item \X item \X item
+        /\ curr = ""
+        /\ pc = "Lbl_1"
+
+Lbl_1 == /\ pc = "Lbl_1"
+         /\ IF items /= <<>>
+               THEN /\ curr' = Head(items)
+                    /\ items' = Tail(items)
+                    /\ IF curr'.type = "recycle" /\ curr'.size < capacity.recycle
+                          THEN /\ bins' = [bins EXCEPT !["recycle"] = Append(bins["recycle"], curr')]
+                               /\ capacity' = [capacity EXCEPT !["recycle"] = capacity["recycle"] - curr'.size]
+                               /\ count' = [count EXCEPT !["recycle"] = count["recycle"] + 1]
+                          ELSE /\ IF curr'.size < capacity.thrash
+                                     THEN /\ bins' = [bins EXCEPT !["thrash"] = Append(bins["thrash"], curr')]
+                                          /\ capacity' = [capacity EXCEPT !["thrash"] = capacity["thrash"] - curr'.size]
+                                          /\ count' = [count EXCEPT !["thrash"] = count["thrash"] + 1]
+                                     ELSE /\ TRUE
+                                          /\ UNCHANGED << capacity, bins, 
+                                                          count >>
+                    /\ pc' = "Lbl_1"
+               ELSE /\ Assert(capacity.thrash >= 0 /\ capacity.recycle >= 0, 
+                              "Failure of assertion at line 35, column 5.")
+                    /\ Assert(Len(bins.thrash) = count.thrash, 
+                              "Failure of assertion at line 36, column 5.")
+                    /\ Assert(Len(bins.recycle) = count.recycle, 
+                              "Failure of assertion at line 37, column 5.")
+                    /\ pc' = "Done"
+                    /\ UNCHANGED << capacity, bins, count, items, curr >>
+         /\ item' = item
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
+Next == Lbl_1
+           \/ Terminating
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(pc = "Done")
+
+\* END TRANSLATION 
+====
