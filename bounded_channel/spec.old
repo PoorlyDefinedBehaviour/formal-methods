@@ -1,0 +1,75 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers, Sequences
+
+CONSTANTS MaxQueueSize
+
+(*--algorithm spec
+variable queue = <<>>;
+
+define
+    BoundedQueue == Len(queue) <= MaxQueueSize
+end define;
+
+macro add_to_queue(msg) begin
+    await Len(queue) < MaxQueueSize;
+    queue := Append(queue, msg);
+end macro;
+
+process writer = "writer"
+begin
+Write:
+    while TRUE do
+        add_to_queue("msg");
+    end while;
+end process;
+
+process reader = "reader"
+variables
+    current_message = "none";
+begin
+Read:
+    while TRUE do
+        await queue /= <<>>;
+        current_message := Head(queue);
+        queue := Tail(queue);
+        either
+            skip;
+        or
+            NotifyFailure:
+                current_message := "none";
+                add_to_queue("fail");
+        end either;
+    end while;
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "58bbb6e7" /\ chksum(tla) = "d68e8e6f")
+VARIABLE queue
+
+(* define statement *)
+BoundedQueue == Len(queue) <= MaxQueueSize
+
+VARIABLE current_message
+
+vars == << queue, current_message >>
+
+ProcSet == {"writer"} \cup {"reader"}
+
+Init == (* Global variables *)
+        /\ queue = <<>>
+        (* Process reader *)
+        /\ current_message = "none"
+
+writer == /\ Len(queue) < MaxQueueSize
+          /\ queue' = Append(queue, "msg")
+          /\ UNCHANGED current_message
+
+reader == /\ queue /= <<>>
+          /\ current_message' = Head(queue)
+          /\ queue' = Tail(queue)
+
+Next == writer \/ reader
+
+Spec == Init /\ [][Next]_vars
+
+\* END TRANSLATION 
+====
