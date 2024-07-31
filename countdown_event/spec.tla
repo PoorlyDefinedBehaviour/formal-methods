@@ -1,0 +1,177 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers
+
+(*--algorithm spec
+variables
+    signal = 3,
+    progress = 0;
+
+macro signal_signal() begin
+    assert signal > 0;
+    signal := signal - 1;
+end macro;
+
+macro signal_wait() begin
+    await signal = 0;
+end macro;
+
+process a = "a"
+variables 
+    tmp = 0;
+begin
+LoadProgres1: tmp := progress;
+SetProgress: progress := tmp + 20;
+
+LoadProgress2: tmp := progress;
+
+CheckProgress: if tmp >= 20 then
+    signal_signal();
+end if;
+
+WaitSignal: signal_wait();
+end process;
+
+process b = "b"
+variables 
+    tmp = 0;
+begin
+LoadProgress1: tmp := progress;
+SetProgress1: progress := tmp + 30;
+
+LoadProgress2: tmp := progress;
+
+CheckProgress1: if tmp >= 30 then
+    signal_signal();
+end if;
+
+LoadProgress3: tmp := progress;
+SetProgress2: progress := tmp + 50;
+
+LoadProgress4: tmp := progress;
+
+CheckProgress2: if tmp >= 80 then
+    signal_signal();
+end if;
+
+signal_wait();
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "6743454" /\ chksum(tla) = "297e7ae1")
+\* Label LoadProgress2 of process a at line 25 col 16 changed to LoadProgress2_
+\* Process variable tmp of process a at line 20 col 5 changed to tmp_
+VARIABLES signal, progress, pc, tmp_, tmp
+
+vars == << signal, progress, pc, tmp_, tmp >>
+
+ProcSet == {"a"} \cup {"b"}
+
+Init == (* Global variables *)
+        /\ signal = 3
+        /\ progress = 0
+        (* Process a *)
+        /\ tmp_ = 0
+        (* Process b *)
+        /\ tmp = 0
+        /\ pc = [self \in ProcSet |-> CASE self = "a" -> "LoadProgres1"
+                                        [] self = "b" -> "LoadProgress1"]
+
+LoadProgres1 == /\ pc["a"] = "LoadProgres1"
+                /\ tmp_' = progress
+                /\ pc' = [pc EXCEPT !["a"] = "SetProgress"]
+                /\ UNCHANGED << signal, progress, tmp >>
+
+SetProgress == /\ pc["a"] = "SetProgress"
+               /\ progress' = tmp_ + 20
+               /\ pc' = [pc EXCEPT !["a"] = "LoadProgress2_"]
+               /\ UNCHANGED << signal, tmp_, tmp >>
+
+LoadProgress2_ == /\ pc["a"] = "LoadProgress2_"
+                  /\ tmp_' = progress
+                  /\ pc' = [pc EXCEPT !["a"] = "CheckProgress"]
+                  /\ UNCHANGED << signal, progress, tmp >>
+
+CheckProgress == /\ pc["a"] = "CheckProgress"
+                 /\ IF tmp_ >= 20
+                       THEN /\ Assert(signal > 0, 
+                                      "Failure of assertion at line 10, column 5 of macro called at line 28, column 5.")
+                            /\ signal' = signal - 1
+                       ELSE /\ TRUE
+                            /\ UNCHANGED signal
+                 /\ pc' = [pc EXCEPT !["a"] = "WaitSignal"]
+                 /\ UNCHANGED << progress, tmp_, tmp >>
+
+WaitSignal == /\ pc["a"] = "WaitSignal"
+              /\ signal = 0
+              /\ pc' = [pc EXCEPT !["a"] = "Done"]
+              /\ UNCHANGED << signal, progress, tmp_, tmp >>
+
+a == LoadProgres1 \/ SetProgress \/ LoadProgress2_ \/ CheckProgress
+        \/ WaitSignal
+
+LoadProgress1 == /\ pc["b"] = "LoadProgress1"
+                 /\ tmp' = progress
+                 /\ pc' = [pc EXCEPT !["b"] = "SetProgress1"]
+                 /\ UNCHANGED << signal, progress, tmp_ >>
+
+SetProgress1 == /\ pc["b"] = "SetProgress1"
+                /\ progress' = tmp + 30
+                /\ pc' = [pc EXCEPT !["b"] = "LoadProgress2"]
+                /\ UNCHANGED << signal, tmp_, tmp >>
+
+LoadProgress2 == /\ pc["b"] = "LoadProgress2"
+                 /\ tmp' = progress
+                 /\ pc' = [pc EXCEPT !["b"] = "CheckProgress1"]
+                 /\ UNCHANGED << signal, progress, tmp_ >>
+
+CheckProgress1 == /\ pc["b"] = "CheckProgress1"
+                  /\ IF tmp >= 30
+                        THEN /\ Assert(signal > 0, 
+                                       "Failure of assertion at line 10, column 5 of macro called at line 44, column 5.")
+                             /\ signal' = signal - 1
+                        ELSE /\ TRUE
+                             /\ UNCHANGED signal
+                  /\ pc' = [pc EXCEPT !["b"] = "LoadProgress3"]
+                  /\ UNCHANGED << progress, tmp_, tmp >>
+
+LoadProgress3 == /\ pc["b"] = "LoadProgress3"
+                 /\ tmp' = progress
+                 /\ pc' = [pc EXCEPT !["b"] = "SetProgress2"]
+                 /\ UNCHANGED << signal, progress, tmp_ >>
+
+SetProgress2 == /\ pc["b"] = "SetProgress2"
+                /\ progress' = tmp + 50
+                /\ pc' = [pc EXCEPT !["b"] = "LoadProgress4"]
+                /\ UNCHANGED << signal, tmp_, tmp >>
+
+LoadProgress4 == /\ pc["b"] = "LoadProgress4"
+                 /\ tmp' = progress
+                 /\ pc' = [pc EXCEPT !["b"] = "CheckProgress2"]
+                 /\ UNCHANGED << signal, progress, tmp_ >>
+
+CheckProgress2 == /\ pc["b"] = "CheckProgress2"
+                  /\ IF tmp >= 80
+                        THEN /\ Assert(signal > 0, 
+                                       "Failure of assertion at line 10, column 5 of macro called at line 53, column 5.")
+                             /\ signal' = signal - 1
+                        ELSE /\ TRUE
+                             /\ UNCHANGED signal
+                  /\ signal' = 0
+                  /\ pc' = [pc EXCEPT !["b"] = "Done"]
+                  /\ UNCHANGED << progress, tmp_, tmp >>
+
+b == LoadProgress1 \/ SetProgress1 \/ LoadProgress2 \/ CheckProgress1
+        \/ LoadProgress3 \/ SetProgress2 \/ LoadProgress4 \/ CheckProgress2
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
+Next == a \/ b
+           \/ Terminating
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(\A self \in ProcSet: pc[self] = "Done")
+
+\* END TRANSLATION 
+====
