@@ -1,0 +1,48 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers, Sequences
+
+(*--algorithm spec
+variables
+    counter = 0,
+    goal = 3;
+
+define
+    Success == <>[](counter = goal)
+end define;
+
+fair process incrementer \in 1..3
+variables
+    local = 0;
+
+begin
+Get: local := counter;
+Increment: counter := local + 1;
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "7808e61f" /\ chksum(tla) = "6bebf641")
+VARIABLES counter, goal, pc
+
+vars == << counter, goal, pc >>
+
+Init == (* Global variables *)
+        /\ counter = 0
+        /\ goal = 3
+        /\ pc = "Lbl_1"
+
+Lbl_1 == /\ pc = "Lbl_1"
+         /\ TRUE
+         /\ pc' = "Done"
+         /\ UNCHANGED << counter, goal >>
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
+Next == Lbl_1
+           \/ Terminating
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(pc = "Done")
+
+\* END TRANSLATION 
+====
