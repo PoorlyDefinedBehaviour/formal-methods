@@ -1,0 +1,266 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+-2504970244191464573 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE",style = filled]
+-2504970244191464573 -> -2698466310130868983 [label="",color="2",fontcolor="2"];
+-2698466310130868983 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-2504970244191464573 -> -393758629691823741 [label="",color="3",fontcolor="3"];
+-393758629691823741 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-2698466310130868983 -> 324477925128623652 [label="",color="4",fontcolor="4"];
+324477925128623652 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-2698466310130868983 -> 3774657981880883374 [label="",color="3",fontcolor="3"];
+3774657981880883374 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-393758629691823741 -> 3774657981880883374 [label="",color="2",fontcolor="2"];
+-393758629691823741 -> 3827673765576704236 [label="",color="5",fontcolor="5"];
+3827673765576704236 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+324477925128623652 -> -2715227100151258964 [label="",color="3",fontcolor="3"];
+-2715227100151258964 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+3774657981880883374 -> -2715227100151258964 [label="",color="4",fontcolor="4"];
+3774657981880883374 -> 5743065596099278066 [label="",color="5",fontcolor="5"];
+5743065596099278066 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+3827673765576704236 -> 5743065596099278066 [label="",color="2",fontcolor="2"];
+3827673765576704236 -> 8349090854877692805 [label="",color="6",fontcolor="6"];
+8349090854877692805 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-2715227100151258964 -> 8181243868267531373 [label="",color="5",fontcolor="5"];
+8181243868267531373 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+5743065596099278066 -> 8181243868267531373 [label="",color="4",fontcolor="4"];
+5743065596099278066 -> 5241327198978682543 [label="",color="6",fontcolor="6"];
+5241327198978682543 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+8349090854877692805 -> 5241327198978682543 [label="",color="2",fontcolor="2"];
+8349090854877692805 -> -8354944075438903624 [label="",color="7",fontcolor="7"];
+-8354944075438903624 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+8181243868267531373 -> 3818907000775514428 [label="",color="6",fontcolor="6"];
+3818907000775514428 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+5241327198978682543 -> 3818907000775514428 [label="",color="4",fontcolor="4"];
+5241327198978682543 -> -7736825293399926190 [label="",color="7",fontcolor="7"];
+-7736825293399926190 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-8354944075438903624 -> -7736825293399926190 [label="",color="2",fontcolor="2"];
+-8354944075438903624 -> -5429846021120135464 [label="",color="3",fontcolor="3"];
+-5429846021120135464 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+3818907000775514428 -> -8811328919076672148 [label="",color="7",fontcolor="7"];
+-8811328919076672148 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-7736825293399926190 -> -8811328919076672148 [label="",color="4",fontcolor="4"];
+-7736825293399926190 -> -341573878255372816 [label="",color="3",fontcolor="3"];
+-341573878255372816 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-5429846021120135464 -> -341573878255372816 [label="",color="2",fontcolor="2"];
+-5429846021120135464 -> -5464633267703923804 [label="",color="5",fontcolor="5"];
+-5464633267703923804 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-8811328919076672148 -> -8639438384711451203 [label="",color="8",fontcolor="8"];
+-8639438384711451203 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-8811328919076672148 -> 4479022998826494765 [label="",color="3",fontcolor="3"];
+4479022998826494765 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-341573878255372816 -> 4479022998826494765 [label="",color="4",fontcolor="4"];
+-341573878255372816 -> -6067954800780083341 [label="",color="5",fontcolor="5"];
+-6067954800780083341 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-5464633267703923804 -> -6067954800780083341 [label="",color="2",fontcolor="2"];
+-5464633267703923804 -> 1961063423657383187 [label="",color="6",fontcolor="6"];
+1961063423657383187 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-8639438384711451203 -> 3484496262242096417 [label="",color="9",fontcolor="9"];
+3484496262242096417 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-8639438384711451203 -> -8181699735612511944 [label="",color="3",fontcolor="3"];
+-8181699735612511944 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4479022998826494765 -> -8181699735612511944 [label="",color="8",fontcolor="8"];
+4479022998826494765 -> -2803211524958401743 [label="",color="5",fontcolor="5"];
+-2803211524958401743 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+-6067954800780083341 -> -2803211524958401743 [label="",color="4",fontcolor="4"];
+-6067954800780083341 -> -3036471541228428226 [label="",color="6",fontcolor="6"];
+-3036471541228428226 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+1961063423657383187 -> -3036471541228428226 [label="",color="2",fontcolor="2"];
+1961063423657383187 -> 6305142759311107337 [label="",color="10",fontcolor="10"];
+6305142759311107337 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+3484496262242096417 -> 8480801660060233602 [label="",color="11",fontcolor="11"];
+8480801660060233602 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+3484496262242096417 -> 3445800900911612143 [label="",color="3",fontcolor="3"];
+3445800900911612143 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-8181699735612511944 -> 3445800900911612143 [label="",color="9",fontcolor="9"];
+-8181699735612511944 -> 8661632809945802654 [label="",color="5",fontcolor="5"];
+8661632809945802654 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-2803211524958401743 -> 8661632809945802654 [label="",color="8",fontcolor="8"];
+-2803211524958401743 -> 4318843197340851260 [label="",color="6",fontcolor="6"];
+4318843197340851260 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-3036471541228428226 -> 4318843197340851260 [label="",color="4",fontcolor="4"];
+-3036471541228428226 -> -441793524977593872 [label="",color="10",fontcolor="10"];
+-441793524977593872 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+6305142759311107337 -> -441793524977593872 [label="",color="2",fontcolor="2"];
+6305142759311107337 -> -8293111931014686515 [label="",color="12",fontcolor="12"];
+-8293111931014686515 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreRelease_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+8480801660060233602 -> 3593732196426104205 [label="",color="13",fontcolor="13"];
+3593732196426104205 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+8480801660060233602 -> 5679324093499218308 [label="",color="3",fontcolor="3"];
+5679324093499218308 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+3445800900911612143 -> 5679324093499218308 [label="",color="11",fontcolor="11"];
+3445800900911612143 -> -2024349920670239172 [label="",color="5",fontcolor="5"];
+-2024349920670239172 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+8661632809945802654 -> -2024349920670239172 [label="",color="9",fontcolor="9"];
+8661632809945802654 -> 8714364038453783116 [label="",color="6",fontcolor="6"];
+8714364038453783116 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4318843197340851260 -> 5837234160215838583 [label="",color="10",fontcolor="10"];
+5837234160215838583 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-441793524977593872 -> 5837234160215838583 [label="",color="4",fontcolor="4"];
+-441793524977593872 -> -5221378308002417177 [label="",color="12",fontcolor="12"];
+-5221378308002417177 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreRelease_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-8293111931014686515 -> -5221378308002417177 [label="",color="2",fontcolor="2"];
+-8293111931014686515 -> -7557465919439928650 [label="",color="14",fontcolor="14"];
+-7557465919439928650 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+3593732196426104205 -> 2986872429559335271 [label="",color="2",fontcolor="2"];
+2986872429559335271 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+3593732196426104205 -> 682164547413999085 [label="",color="3",fontcolor="3"];
+682164547413999085 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+5679324093499218308 -> 682164547413999085 [label="",color="13",fontcolor="13"];
+5679324093499218308 -> 4691106777132646731 [label="",color="5",fontcolor="5"];
+4691106777132646731 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-2024349920670239172 -> 4691106777132646731 [label="",color="11",fontcolor="11"];
+-2024349920670239172 -> 4964172352023311511 [label="",color="6",fontcolor="6"];
+4964172352023311511 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+8714364038453783116 -> 4964172352023311511 [label="",color="9",fontcolor="9"];
+8714364038453783116 -> -4163905771164157210 [label="",color="7",fontcolor="7"];
+-4163905771164157210 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+5837234160215838583 -> -3762083584335658380 [label="",color="12",fontcolor="12"];
+-3762083584335658380 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"SemaphoreRelease_1\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-5221378308002417177 -> -3762083584335658380 [label="",color="4",fontcolor="4"];
+-5221378308002417177 -> -8092269190704007588 [label="",color="14",fontcolor="14"];
+-8092269190704007588 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-7557465919439928650 -> -8092269190704007588 [label="",color="2",fontcolor="2"];
+-7557465919439928650 -> -5785307309671660842 [label="",color="3",fontcolor="3"];
+-5785307309671660842 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+2986872429559335271 -> -8811328919076672148 [label="",color="4",fontcolor="4"];
+2986872429559335271 -> 5084769155305973445 [label="",color="3",fontcolor="3"];
+5084769155305973445 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+682164547413999085 -> 5084769155305973445 [label="",color="2",fontcolor="2"];
+682164547413999085 -> 719307360087091345 [label="",color="5",fontcolor="5"];
+719307360087091345 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4691106777132646731 -> 719307360087091345 [label="",color="13",fontcolor="13"];
+4691106777132646731 -> 1902947995784317207 [label="",color="6",fontcolor="6"];
+1902947995784317207 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4964172352023311511 -> 1902947995784317207 [label="",color="11",fontcolor="11"];
+4964172352023311511 -> 9112809205100991098 [label="",color="7",fontcolor="7"];
+9112809205100991098 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-4163905771164157210 -> 9112809205100991098 [label="",color="9",fontcolor="9"];
+-4163905771164157210 -> 4707660469429322854 [label="",color="3",fontcolor="3"];
+4707660469429322854 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-3762083584335658380 -> -7015230114764766878 [label="",color="14",fontcolor="14"];
+-7015230114764766878 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-8092269190704007588 -> -7015230114764766878 [label="",color="4",fontcolor="4"];
+-8092269190704007588 -> -2282966335160509954 [label="",color="3",fontcolor="3"];
+-2282966335160509954 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-5785307309671660842 -> -2282966335160509954 [label="",color="2",fontcolor="2"];
+-5785307309671660842 -> -5464633267703923804 [label="",color="5",fontcolor="5"];
+5084769155305973445 -> 4479022998826494765 [label="",color="4",fontcolor="4"];
+5084769155305973445 -> 1592178080351874118 [label="",color="5",fontcolor="5"];
+1592178080351874118 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+719307360087091345 -> 1592178080351874118 [label="",color="2",fontcolor="2"];
+719307360087091345 -> -6420481539922655706 [label="",color="6",fontcolor="6"];
+-6420481539922655706 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+1902947995784317207 -> 4066549395310286337 [label="",color="13",fontcolor="13"];
+4066549395310286337 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+1902947995784317207 -> 3973975101969128381 [label="",color="7",fontcolor="7"];
+3973975101969128381 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+9112809205100991098 -> 3973975101969128381 [label="",color="11",fontcolor="11"];
+9112809205100991098 -> -2237784782335529551 [label="",color="3",fontcolor="3"];
+-2237784782335529551 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4707660469429322854 -> -2237784782335529551 [label="",color="9",fontcolor="9"];
+4707660469429322854 -> -7183960626374120417 [label="",color="5",fontcolor="5"];
+-7183960626374120417 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-7015230114764766878 -> -7851543295972208205 [label="",color="8",fontcolor="8"];
+-7851543295972208205 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-7015230114764766878 -> 2682902686793697059 [label="",color="3",fontcolor="3"];
+2682902686793697059 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = TRUE"];
+-2282966335160509954 -> 2682902686793697059 [label="",color="4",fontcolor="4"];
+-2282966335160509954 -> -6067954800780083341 [label="",color="5",fontcolor="5"];
+1592178080351874118 -> -2803211524958401743 [label="",color="4",fontcolor="4"];
+1592178080351874118 -> 7498088749873903371 [label="",color="6",fontcolor="6"];
+7498088749873903371 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-6420481539922655706 -> 7498088749873903371 [label="",color="2",fontcolor="2"];
+-6420481539922655706 -> -1562015508902676932 [label="",color="10",fontcolor="10"];
+-1562015508902676932 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+4066549395310286337 -> 8909690379780823447 [label="",color="2",fontcolor="2"];
+8909690379780823447 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+4066549395310286337 -> 3593732196426104205 [label="",color="7",fontcolor="7"];
+3973975101969128381 -> 3593732196426104205 [label="",color="13",fontcolor="13"];
+3973975101969128381 -> 2332799856862311442 [label="",color="3",fontcolor="3"];
+2332799856862311442 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-2237784782335529551 -> 2332799856862311442 [label="",color="11",fontcolor="11"];
+-2237784782335529551 -> 545265965244349885 [label="",color="5",fontcolor="5"];
+545265965244349885 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 1\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+-7183960626374120417 -> 545265965244349885 [label="",color="9",fontcolor="9"];
+-7183960626374120417 -> 8055476454098326952 [label="",color="6",fontcolor="6"];
+8055476454098326952 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-7851543295972208205 -> 3118831300430133551 [label="",color="9",fontcolor="9"];
+3118831300430133551 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-7851543295972208205 -> -7680896753898060490 [label="",color="3",fontcolor="3"];
+-7680896753898060490 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+2682902686793697059 -> -7680896753898060490 [label="",color="8",fontcolor="8"];
+2682902686793697059 -> -2803211524958401743 [label="",color="5",fontcolor="5"];
+7498088749873903371 -> 4318843197340851260 [label="",color="4",fontcolor="4"];
+7498088749873903371 -> 4903480892750398149 [label="",color="10",fontcolor="10"];
+4903480892750398149 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-1562015508902676932 -> 4903480892750398149 [label="",color="2",fontcolor="2"];
+-1562015508902676932 -> 3547205270905670648 [label="",color="12",fontcolor="12"];
+3547205270905670648 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"SemaphoreRelease_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+8909690379780823447 -> 742479340510760994 [label="",color="4",fontcolor="4"];
+742479340510760994 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait_\", b |-> \"SemaphoreRelease_2\"]\n/\\ sema_acquired_ = FALSE\n/\\ sema_acquired = FALSE"];
+8909690379780823447 -> 2986872429559335271 [label="",color="7",fontcolor="7"];
+2332799856862311442 -> 682164547413999085 [label="",color="13",fontcolor="13"];
+2332799856862311442 -> 7771172917649715565 [label="",color="5",fontcolor="5"];
+7771172917649715565 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"SemaphoreWait\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = FALSE"];
+545265965244349885 -> 7771172917649715565 [label="",color="11",fontcolor="11"];
+545265965244349885 -> -3571354511862940545 [label="",color="6",fontcolor="6"];
+-3571354511862940545 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+8055476454098326952 -> -3571354511862940545 [label="",color="9",fontcolor="9"];
+8055476454098326952 -> 4884412447786950758 [label="",color="10",fontcolor="10"];
+4884412447786950758 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_1_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+3118831300430133551 -> 7972187477025932172 [label="",color="11",fontcolor="11"];
+7972187477025932172 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+3118831300430133551 -> 3801825065328372961 [label="",color="3",fontcolor="3"];
+3801825065328372961 [label="/\\ threads_in_critical_section = 1\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"ResetSemaAcquired\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-7680896753898060490 -> 3801825065328372961 [label="",color="9",fontcolor="9"];
+-7680896753898060490 -> 8661632809945802654 [label="",color="5",fontcolor="5"];
+4903480892750398149 -> 5837234160215838583 [label="",color="4",fontcolor="4"];
+4903480892750398149 -> 746250441406080722 [label="",color="12",fontcolor="12"];
+746250441406080722 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired_\", b |-> \"SemaphoreRelease_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+3547205270905670648 -> 746250441406080722 [label="",color="2",fontcolor="2"];
+3547205270905670648 -> 3084044408853664131 [label="",color="14",fontcolor="14"];
+3084044408853664131 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+742479340510760994 -> 8714364038453783116 [label="",color="8",fontcolor="8"];
+742479340510760994 -> -8811328919076672148 [label="",color="7",fontcolor="7"];
+7771172917649715565 -> 719307360087091345 [label="",color="13",fontcolor="13"];
+7771172917649715565 -> -5805406569139804908 [label="",color="6",fontcolor="6"];
+-5805406569139804908 [label="/\\ threads_in_critical_section = 0\n/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreRelease\", b |-> \"CriticalSection_1\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+-3571354511862940545 -> -5805406569139804908 [label="",color="11",fontcolor="11"];
+-3571354511862940545 -> 894883200425443082 [label="",color="10",fontcolor="10"];
+894883200425443082 [label="/\\ threads_in_critical_section = 2\n/\\ sema = 0\n/\\ pc = [a |-> \"CriticalSection_2_\", b |-> \"CriticalSection_2\"]\n/\\ sema_acquired_ = TRUE\n/\\ sema_acquired = TRUE"];
+{rank = same; -2504970244191464573;}
+{rank = same; -2698466310130868983;-393758629691823741;}
+{rank = same; 3827673765576704236;3774657981880883374;324477925128623652;}
+{rank = same; -2715227100151258964;5743065596099278066;8349090854877692805;}
+{rank = same; -8354944075438903624;5241327198978682543;8181243868267531373;}
+{rank = same; -5429846021120135464;-7736825293399926190;3818907000775514428;}
+{rank = same; -341573878255372816;-5464633267703923804;-8811328919076672148;}
+{rank = same; -8639438384711451203;4479022998826494765;1961063423657383187;-6067954800780083341;}
+{rank = same; -2803211524958401743;3484496262242096417;-8181699735612511944;-3036471541228428226;6305142759311107337;}
+{rank = same; 8480801660060233602;-8293111931014686515;3445800900911612143;-441793524977593872;8661632809945802654;4318843197340851260;}
+{rank = same; -2024349920670239172;8714364038453783116;-7557465919439928650;3593732196426104205;-5221378308002417177;5679324093499218308;5837234160215838583;}
+{rank = same; 2986872429559335271;4691106777132646731;682164547413999085;4964172352023311511;-8092269190704007588;-5785307309671660842;-4163905771164157210;-3762083584335658380;}
+{rank = same; 719307360087091345;-7015230114764766878;1902947995784317207;4707660469429322854;9112809205100991098;-2282966335160509954;5084769155305973445;}
+{rank = same; 1592178080351874118;4066549395310286337;-2237784782335529551;-6420481539922655706;-7851543295972208205;2682902686793697059;3973975101969128381;-7183960626374120417;}
+{rank = same; -1562015508902676932;545265965244349885;8055476454098326952;2332799856862311442;3118831300430133551;-7680896753898060490;7498088749873903371;8909690379780823447;}
+{rank = same; 4903480892750398149;-3571354511862940545;7771172917649715565;742479340510760994;3547205270905670648;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+Loop [label="Loop",fillcolor=3]
+CriticalSection_2 [label="CriticalSection_2",fillcolor=12]
+CriticalSection_1 [label="CriticalSection_1",fillcolor=10]
+SemaphoreRelease_2 [label="SemaphoreRelease_2",fillcolor=7]
+SemaphoreRelease_1 [label="SemaphoreRelease_1",fillcolor=14]
+SemaphoreWait_ [label="SemaphoreWait_",fillcolor=8]
+ResetSemaAcquired_ [label="ResetSemaAcquired_",fillcolor=4]
+SemaphoreRelease [label="SemaphoreRelease",fillcolor=13]
+CriticalSection_2_ [label="CriticalSection_2_",fillcolor=11]
+CriticalSection_1_ [label="CriticalSection_1_",fillcolor=9]
+ResetSemaAcquired [label="ResetSemaAcquired",fillcolor=5]
+Loop_ [label="Loop_",fillcolor=2]
+SemaphoreWait [label="SemaphoreWait",fillcolor=6]
+}}
