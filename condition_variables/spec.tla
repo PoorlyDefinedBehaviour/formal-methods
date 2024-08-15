@@ -1,0 +1,248 @@
+---- MODULE spec ----
+EXTENDS TLC, Sequences, Integers
+
+(*--algorithm spec
+variables
+    queue = <<>>,
+    condition_variable = [a |-> FALSE, b |-> FALSE],
+    mutex = "";
+
+macro mutex_enter(thread) begin
+    await mutex = "";
+    mutex := thread;
+end macro;
+
+macro mutex_exit(thread) begin
+    assert mutex = thread;
+    mutex := "";
+end macro;
+
+macro mutex_pulse_all(thread) begin
+    assert mutex = thread;
+    condition_variable := [x \in DOMAIN condition_variable |-> TRUE];
+end macro;
+
+macro dequeue() begin
+    assert Len(queue) > 0;
+    queue := Tail(queue);
+end macro;
+
+procedure mutex_wait(thread) begin
+    MutexWait_ReleaseMutex:
+        assert mutex = thread;
+        mutex := "";
+    MutexWait_AwaitForConditionVariable: 
+        await condition_variable[thread] = TRUE;
+        condition_variable[thread] := FALSE;
+    MutexWait_AcquireMutex: 
+        mutex_enter(thread);
+        return;
+end procedure;
+
+process a = "a"
+begin
+Loop:
+while TRUE do
+    AcquireMutex: mutex_enter("a");
+    CheckQueueLen: 
+        if Len(queue) = 0 then
+            call mutex_wait("a");
+        end if;
+    Dequeue: dequeue();
+    ReleaseMutex: mutex_exit("a");
+end while;
+end process;
+
+process b = "b"
+begin
+Loop:
+while TRUE do
+    AcquireMutex: mutex_enter("b");
+    CheckQueueLen: 
+        if Len(queue) = 0 then
+            call mutex_wait("b");
+        end if;
+    Dequeue: dequeue();
+    ReleaseMutex: mutex_exit("b");
+end while;
+end process;
+
+process c = "c"
+begin
+Loop:
+while TRUE do
+    AcquireMutex: mutex_enter("c");
+    Enqueue: queue := Append(queue, 42);
+    MutexPulseAll: mutex_pulse_all("c");
+    ReleaseMutex: mutex_exit("c");
+end while;
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "98345da5" /\ chksum(tla) = "6dda852c")
+\* Label Loop of process a at line 45 col 1 changed to Loop_
+\* Label AcquireMutex of process a at line 11 col 5 changed to AcquireMutex_
+\* Label CheckQueueLen of process a at line 48 col 9 changed to CheckQueueLen_
+\* Label Dequeue of process a at line 26 col 5 changed to Dequeue_
+\* Label ReleaseMutex of process a at line 16 col 5 changed to ReleaseMutex_
+\* Label Loop of process b at line 59 col 1 changed to Loop_b
+\* Label AcquireMutex of process b at line 11 col 5 changed to AcquireMutex_b
+\* Label ReleaseMutex of process b at line 16 col 5 changed to ReleaseMutex_b
+CONSTANT defaultInitValue
+VARIABLES queue, condition_variable, mutex, pc, stack, thread
+
+vars == << queue, condition_variable, mutex, pc, stack, thread >>
+
+ProcSet == {"a"} \cup {"b"} \cup {"c"}
+
+Init == (* Global variables *)
+        /\ queue = <<>>
+        /\ condition_variable = [a |-> FALSE, b |-> FALSE]
+        /\ mutex = ""
+        (* Procedure mutex_wait *)
+        /\ thread = [ self \in ProcSet |-> defaultInitValue]
+        /\ stack = [self \in ProcSet |-> << >>]
+        /\ pc = [self \in ProcSet |-> CASE self = "a" -> "Loop_"
+                                        [] self = "b" -> "Loop_b"
+                                        [] self = "c" -> "Loop"]
+
+MutexWait_ReleaseMutex(self) == /\ pc[self] = "MutexWait_ReleaseMutex"
+                                /\ Assert(mutex = thread[self], 
+                                          "Failure of assertion at line 32, column 9.")
+                                /\ mutex' = ""
+                                /\ pc' = [pc EXCEPT ![self] = "MutexWait_AwaitForConditionVariable"]
+                                /\ UNCHANGED << queue, condition_variable, 
+                                                stack, thread >>
+
+MutexWait_AwaitForConditionVariable(self) == /\ pc[self] = "MutexWait_AwaitForConditionVariable"
+                                             /\ condition_variable[thread[self]] = TRUE
+                                             /\ condition_variable' = [condition_variable EXCEPT ![thread[self]] = FALSE]
+                                             /\ pc' = [pc EXCEPT ![self] = "MutexWait_AcquireMutex"]
+                                             /\ UNCHANGED << queue, mutex, 
+                                                             stack, thread >>
+
+MutexWait_AcquireMutex(self) == /\ pc[self] = "MutexWait_AcquireMutex"
+                                /\ mutex = ""
+                                /\ mutex' = thread[self]
+                                /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+                                /\ thread' = [thread EXCEPT ![self] = Head(stack[self]).thread]
+                                /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+                                /\ UNCHANGED << queue, condition_variable >>
+
+mutex_wait(self) == MutexWait_ReleaseMutex(self)
+                       \/ MutexWait_AwaitForConditionVariable(self)
+                       \/ MutexWait_AcquireMutex(self)
+
+Loop_ == /\ pc["a"] = "Loop_"
+         /\ pc' = [pc EXCEPT !["a"] = "AcquireMutex_"]
+         /\ UNCHANGED << queue, condition_variable, mutex, stack, thread >>
+
+AcquireMutex_ == /\ pc["a"] = "AcquireMutex_"
+                 /\ mutex = ""
+                 /\ mutex' = "a"
+                 /\ pc' = [pc EXCEPT !["a"] = "CheckQueueLen_"]
+                 /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+CheckQueueLen_ == /\ pc["a"] = "CheckQueueLen_"
+                  /\ IF Len(queue) = 0
+                        THEN /\ /\ stack' = [stack EXCEPT !["a"] = << [ procedure |->  "mutex_wait",
+                                                                        pc        |->  "Dequeue_",
+                                                                        thread    |->  thread["a"] ] >>
+                                                                    \o stack["a"]]
+                                /\ thread' = [thread EXCEPT !["a"] = "a"]
+                             /\ pc' = [pc EXCEPT !["a"] = "MutexWait_ReleaseMutex"]
+                        ELSE /\ pc' = [pc EXCEPT !["a"] = "Dequeue_"]
+                             /\ UNCHANGED << stack, thread >>
+                  /\ UNCHANGED << queue, condition_variable, mutex >>
+
+Dequeue_ == /\ pc["a"] = "Dequeue_"
+            /\ Assert(Len(queue) > 0, 
+                      "Failure of assertion at line 26, column 5 of macro called at line 51, column 14.")
+            /\ queue' = Tail(queue)
+            /\ pc' = [pc EXCEPT !["a"] = "ReleaseMutex_"]
+            /\ UNCHANGED << condition_variable, mutex, stack, thread >>
+
+ReleaseMutex_ == /\ pc["a"] = "ReleaseMutex_"
+                 /\ Assert(mutex = "a", 
+                           "Failure of assertion at line 16, column 5 of macro called at line 52, column 19.")
+                 /\ mutex' = ""
+                 /\ pc' = [pc EXCEPT !["a"] = "Loop_"]
+                 /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+a == Loop_ \/ AcquireMutex_ \/ CheckQueueLen_ \/ Dequeue_ \/ ReleaseMutex_
+
+Loop_b == /\ pc["b"] = "Loop_b"
+          /\ pc' = [pc EXCEPT !["b"] = "AcquireMutex_b"]
+          /\ UNCHANGED << queue, condition_variable, mutex, stack, thread >>
+
+AcquireMutex_b == /\ pc["b"] = "AcquireMutex_b"
+                  /\ mutex = ""
+                  /\ mutex' = "b"
+                  /\ pc' = [pc EXCEPT !["b"] = "CheckQueueLen"]
+                  /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+CheckQueueLen == /\ pc["b"] = "CheckQueueLen"
+                 /\ IF Len(queue) = 0
+                       THEN /\ /\ stack' = [stack EXCEPT !["b"] = << [ procedure |->  "mutex_wait",
+                                                                       pc        |->  "Dequeue",
+                                                                       thread    |->  thread["b"] ] >>
+                                                                   \o stack["b"]]
+                               /\ thread' = [thread EXCEPT !["b"] = "b"]
+                            /\ pc' = [pc EXCEPT !["b"] = "MutexWait_ReleaseMutex"]
+                       ELSE /\ pc' = [pc EXCEPT !["b"] = "Dequeue"]
+                            /\ UNCHANGED << stack, thread >>
+                 /\ UNCHANGED << queue, condition_variable, mutex >>
+
+Dequeue == /\ pc["b"] = "Dequeue"
+           /\ Assert(Len(queue) > 0, 
+                     "Failure of assertion at line 26, column 5 of macro called at line 65, column 14.")
+           /\ queue' = Tail(queue)
+           /\ pc' = [pc EXCEPT !["b"] = "ReleaseMutex_b"]
+           /\ UNCHANGED << condition_variable, mutex, stack, thread >>
+
+ReleaseMutex_b == /\ pc["b"] = "ReleaseMutex_b"
+                  /\ Assert(mutex = "b", 
+                            "Failure of assertion at line 16, column 5 of macro called at line 66, column 19.")
+                  /\ mutex' = ""
+                  /\ pc' = [pc EXCEPT !["b"] = "Loop_b"]
+                  /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+b == Loop_b \/ AcquireMutex_b \/ CheckQueueLen \/ Dequeue \/ ReleaseMutex_b
+
+Loop == /\ pc["c"] = "Loop"
+        /\ pc' = [pc EXCEPT !["c"] = "AcquireMutex"]
+        /\ UNCHANGED << queue, condition_variable, mutex, stack, thread >>
+
+AcquireMutex == /\ pc["c"] = "AcquireMutex"
+                /\ mutex = ""
+                /\ mutex' = "c"
+                /\ pc' = [pc EXCEPT !["c"] = "Enqueue"]
+                /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+Enqueue == /\ pc["c"] = "Enqueue"
+           /\ queue' = Append(queue, 42)
+           /\ pc' = [pc EXCEPT !["c"] = "MutexPulseAll"]
+           /\ UNCHANGED << condition_variable, mutex, stack, thread >>
+
+MutexPulseAll == /\ pc["c"] = "MutexPulseAll"
+                 /\ Assert(mutex = "c", 
+                           "Failure of assertion at line 21, column 5 of macro called at line 76, column 20.")
+                 /\ condition_variable' = [x \in DOMAIN condition_variable |-> TRUE]
+                 /\ pc' = [pc EXCEPT !["c"] = "ReleaseMutex"]
+                 /\ UNCHANGED << queue, mutex, stack, thread >>
+
+ReleaseMutex == /\ pc["c"] = "ReleaseMutex"
+                /\ Assert(mutex = "c", 
+                          "Failure of assertion at line 16, column 5 of macro called at line 77, column 19.")
+                /\ mutex' = ""
+                /\ pc' = [pc EXCEPT !["c"] = "Loop"]
+                /\ UNCHANGED << queue, condition_variable, stack, thread >>
+
+c == Loop \/ AcquireMutex \/ Enqueue \/ MutexPulseAll \/ ReleaseMutex
+
+Next == a \/ b \/ c
+           \/ (\E self \in ProcSet: mutex_wait(self))
+
+Spec == Init /\ [][Next]_vars
+
+\* END TRANSLATION 
+====
