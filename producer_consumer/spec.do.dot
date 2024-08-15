@@ -1,0 +1,60 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+-5266141382357042801 [label="/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE",style = filled]
+-5266141382357042801 -> -2412466156873259005 [label="",color="2",fontcolor="2"];
+-2412466156873259005 [label="/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired\", b |-> \"Loop\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-5266141382357042801 -> 4507744053545573529 [label="",color="3",fontcolor="3"];
+4507744053545573529 [label="/\\ sema = 0\n/\\ pc = [a |-> \"Loop_\", b |-> \"ReleaseSema\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-2412466156873259005 -> -6691917767076293158 [label="",color="4",fontcolor="4"];
+-6691917767076293158 [label="/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait\", b |-> \"Loop\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-2412466156873259005 -> -3347236073610752255 [label="",color="3",fontcolor="3"];
+-3347236073610752255 [label="/\\ sema = 0\n/\\ pc = [a |-> \"ResetSemaAcquired\", b |-> \"ReleaseSema\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+4507744053545573529 -> -3347236073610752255 [label="",color="2",fontcolor="2"];
+4507744053545573529 -> -7393317703283893581 [label="",color="5",fontcolor="5"];
+-7393317703283893581 [label="/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Enqueue\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-6691917767076293158 -> -5266141382357042801 [label="",color="6",fontcolor="6"];
+-6691917767076293158 -> 2653883111808782598 [label="",color="3",fontcolor="3"];
+2653883111808782598 [label="/\\ sema = 0\n/\\ pc = [a |-> \"SemaphoreWait\", b |-> \"ReleaseSema\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-3347236073610752255 -> 2653883111808782598 [label="",color="4",fontcolor="4"];
+-3347236073610752255 -> 4058082058759716476 [label="",color="5",fontcolor="5"];
+4058082058759716476 [label="/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired\", b |-> \"Enqueue\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+-7393317703283893581 -> 4058082058759716476 [label="",color="2",fontcolor="2"];
+-7393317703283893581 -> -1641212809730573506 [label="",color="7",fontcolor="7"];
+-1641212809730573506 [label="/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+2653883111808782598 -> 4507744053545573529 [label="",color="6",fontcolor="6"];
+2653883111808782598 -> 1015652860567137370 [label="",color="5",fontcolor="5"];
+1015652860567137370 [label="/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait\", b |-> \"Enqueue\"]\n/\\ queue = <<>>\n/\\ sema_acquired = FALSE"];
+4058082058759716476 -> 1015652860567137370 [label="",color="4",fontcolor="4"];
+4058082058759716476 -> -3796265045721513642 [label="",color="7",fontcolor="7"];
+-3796265045721513642 [label="/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+-1641212809730573506 -> -3796265045721513642 [label="",color="2",fontcolor="2"];
+-1641212809730573506 -> -8934559070876737333 [label="",color="3",fontcolor="3"];
+-8934559070876737333 [label="/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"ReleaseSema\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+1015652860567137370 -> -811375164330078978 [label="",color="6",fontcolor="6"];
+-811375164330078978 [label="/\\ sema = 0\n/\\ pc = [a |-> \"Dequeue\", b |-> \"Enqueue\"]\n/\\ queue = <<>>\n/\\ sema_acquired = TRUE"];
+1015652860567137370 -> 6842964073578710504 [label="",color="7",fontcolor="7"];
+6842964073578710504 [label="/\\ sema = 1\n/\\ pc = [a |-> \"SemaphoreWait\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+-3796265045721513642 -> 6842964073578710504 [label="",color="4",fontcolor="4"];
+-3796265045721513642 -> 239834820510310050 [label="",color="3",fontcolor="3"];
+239834820510310050 [label="/\\ sema = 1\n/\\ pc = [a |-> \"ResetSemaAcquired\", b |-> \"ReleaseSema\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+-8934559070876737333 -> 239834820510310050 [label="",color="2",fontcolor="2"];
+-8934559070876737333 -> 3977096423983001088 [label="",color="5",fontcolor="5"];
+3977096423983001088 [label="/\\ sema = 1\n/\\ pc = [a |-> \"Loop_\", b |-> \"Enqueue\"]\n/\\ queue = <<\"v\">>\n/\\ sema_acquired = FALSE"];
+{rank = same; -5266141382357042801;}
+{rank = same; -2412466156873259005;4507744053545573529;}
+{rank = same; -3347236073610752255;-7393317703283893581;-6691917767076293158;}
+{rank = same; -1641212809730573506;2653883111808782598;4058082058759716476;}
+{rank = same; -8934559070876737333;1015652860567137370;-3796265045721513642;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+Loop [label="Loop",fillcolor=3]
+ResetSemaAcquired [label="ResetSemaAcquired",fillcolor=4]
+Loop_ [label="Loop_",fillcolor=2]
+Enqueue [label="Enqueue",fillcolor=7]
+ReleaseSema [label="ReleaseSema",fillcolor=5]
+SemaphoreWait [label="SemaphoreWait",fillcolor=6]
+}}
