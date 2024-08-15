@@ -1,0 +1,57 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+-6036822905157169735 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"Loop_\", b |-> \"Loop\"]\n/\\ queue = <<>>",style = filled]
+-6036822905157169735 -> 1669020559295737575 [label="",color="2",fontcolor="2"];
+1669020559295737575 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"AddItem\", b |-> \"Loop\"]\n/\\ queue = <<>>"];
+-6036822905157169735 -> -4394719530085404271 [label="",color="3",fontcolor="3"];
+-4394719530085404271 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"Loop_\", b |-> \"CheckQueueLen\"]\n/\\ queue = <<>>"];
+1669020559295737575 -> -6114649854754563523 [label="",color="3",fontcolor="3"];
+-6114649854754563523 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"AddItem\", b |-> \"CheckQueueLen\"]\n/\\ queue = <<>>"];
+1669020559295737575 -> 5233489606931871579 [label="",color="4",fontcolor="4"];
+5233489606931871579 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"EnterInconsistentState\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>"];
+-4394719530085404271 -> -6114649854754563523 [label="",color="2",fontcolor="2"];
+-4394719530085404271 -> -6036822905157169735 [label="",color="5",fontcolor="5"];
+-6114649854754563523 -> 1669020559295737575 [label="",color="5",fontcolor="5"];
+-6114649854754563523 -> 4364108522702425732 [label="",color="4",fontcolor="4"];
+4364108522702425732 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"EnterInconsistentState\", b |-> \"CheckQueueLen\"]\n/\\ queue = <<\"v\">>"];
+5233489606931871579 -> 4364108522702425732 [label="",color="3",fontcolor="3"];
+5233489606931871579 -> -2972896747373487383 [label="",color="6",fontcolor="6"];
+-2972896747373487383 [label="/\\ is_queue_inconsistent = TRUE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"LeaveInconsistentState\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>"];
+4364108522702425732 -> -2030851674584133028 [label="",color="5",fontcolor="5"];
+-2030851674584133028 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [ a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>,\n  b |-> <<[pc |-> \"Loop\", procedure |-> \"dequeue\"]>> ]\n/\\ pc = [a |-> \"EnterInconsistentState\", b |-> \"Dequeue\"]\n/\\ queue = <<\"v\">>"];
+4364108522702425732 -> 4540052569181521921 [label="",color="6",fontcolor="6"];
+4540052569181521921 [label="/\\ is_queue_inconsistent = TRUE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"LeaveInconsistentState\", b |-> \"CheckQueueLen\"]\n/\\ queue = <<\"v\">>"];
+-2972896747373487383 -> 4540052569181521921 [label="",color="3",fontcolor="3"];
+-2972896747373487383 -> 8111148143346840683 [label="",color="7",fontcolor="7"];
+8111148143346840683 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"Error\", b |-> \"Loop\"]\n/\\ queue = <<\"v\">>"];
+-2030851674584133028 -> 7073428126014144043 [label="",color="6",fontcolor="6"];
+7073428126014144043 [label="/\\ is_queue_inconsistent = TRUE\n/\\ stack = [ a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>,\n  b |-> <<[pc |-> \"Loop\", procedure |-> \"dequeue\"]>> ]\n/\\ pc = [a |-> \"LeaveInconsistentState\", b |-> \"Dequeue\"]\n/\\ queue = <<\"v\">>"];
+-2030851674584133028 -> 3041940236003381478 [label="",color="8",fontcolor="8"];
+3041940236003381478 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [ a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>,\n  b |-> <<[pc |-> \"Loop\", procedure |-> \"dequeue\"]>> ]\n/\\ pc = [a |-> \"EnterInconsistentState\", b |-> \"Error\"]\n/\\ queue = <<>>"];
+4540052569181521921 -> 7073428126014144043 [label="",color="5",fontcolor="5"];
+4540052569181521921 -> 6897521381353962125 [label="",color="7",fontcolor="7"];
+6897521381353962125 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>, b |-> <<>>]\n/\\ pc = [a |-> \"Error\", b |-> \"CheckQueueLen\"]\n/\\ queue = <<\"v\">>"];
+8111148143346840683 -> 6897521381353962125 [label="",color="3",fontcolor="3"];
+7073428126014144043 -> -3272442887608274287 [label="",color="7",fontcolor="7"];
+-3272442887608274287 [label="/\\ is_queue_inconsistent = FALSE\n/\\ stack = [ a |-> <<[pc |-> \"Loop_\", procedure |-> \"enqueue\"]>>,\n  b |-> <<[pc |-> \"Loop\", procedure |-> \"dequeue\"]>> ]\n/\\ pc = [a |-> \"Error\", b |-> \"Dequeue\"]\n/\\ queue = <<\"v\">>"];
+7073428126014144043 -> -3272442887608274287 [label="",color="7",fontcolor="7"];
+{rank = same; -6036822905157169735;}
+{rank = same; 1669020559295737575;-4394719530085404271;}
+{rank = same; 5233489606931871579;-6114649854754563523;}
+{rank = same; -2972896747373487383;4364108522702425732;}
+{rank = same; -2030851674584133028;8111148143346840683;4540052569181521921;}
+{rank = same; 7073428126014144043;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+Loop [label="Loop",fillcolor=3]
+Dequeue [label="Dequeue",fillcolor=8]
+EnterInconsistentState [label="EnterInconsistentState",fillcolor=6]
+Loop_ [label="Loop_",fillcolor=2]
+AddItem [label="AddItem",fillcolor=4]
+LeaveInconsistentState [label="LeaveInconsistentState",fillcolor=7]
+CheckQueueLen [label="CheckQueueLen",fillcolor=5]
+}}
