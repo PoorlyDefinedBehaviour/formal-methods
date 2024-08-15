@@ -1,0 +1,67 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+5338623821343872817 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"AcquireMutex_a\", b |-> \"AcquireMutex\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]",style = filled]
+5338623821343872817 -> 6772608435175600240 [label="",color="2",fontcolor="2"];
+6772608435175600240 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"MutexWait\", b |-> \"AcquireMutex\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+5338623821343872817 -> 5499395562065004945 [label="",color="3",fontcolor="3"];
+5499395562065004945 [label="/\\ mutex = \"b\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"AcquireMutex_a\", b |-> \"PulseAll\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+6772608435175600240 -> -8367990512832378260 [label="",color="4",fontcolor="4"];
+-8367990512832378260 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_ReleaseMutex\", b |-> \"AcquireMutex\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+5499395562065004945 -> 3825196272412133063 [label="",color="5",fontcolor="5"];
+3825196272412133063 [label="/\\ mutex = \"b\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"AcquireMutex_a\", b |-> \"ReleaseMutex\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+-8367990512832378260 -> -1220663074108001990 [label="",color="6",fontcolor="6"];
+-1220663074108001990 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_AwaitForConditionVariable\", b |-> \"AcquireMutex\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+3825196272412133063 -> 62479124568865510 [label="",color="7",fontcolor="7"];
+62479124568865510 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"AcquireMutex_a\", b |-> \"Done\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+-1220663074108001990 -> 1352907249935964440 [label="",color="3",fontcolor="3"];
+1352907249935964440 [label="/\\ mutex = \"b\"\n/\\ condition_variable = [a |-> FALSE, b |-> FALSE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_AwaitForConditionVariable\", b |-> \"PulseAll\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+62479124568865510 -> -6466522194997351489 [label="",color="2",fontcolor="2"];
+-6466522194997351489 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"MutexWait\", b |-> \"Done\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+1352907249935964440 -> -7904412350680539618 [label="",color="5",fontcolor="5"];
+-7904412350680539618 [label="/\\ mutex = \"b\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_AwaitForConditionVariable\", b |-> \"ReleaseMutex\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+-6466522194997351489 -> 7577568005042248200 [label="",color="4",fontcolor="4"];
+7577568005042248200 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_ReleaseMutex\", b |-> \"Done\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+-7904412350680539618 -> -3589056990141219328 [label="",color="7",fontcolor="7"];
+-3589056990141219328 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> TRUE, b |-> TRUE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"MutexWait_AwaitForConditionVariable\", b |-> \"Done\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+-7904412350680539618 -> -6800758760715057550 [label="",color="8",fontcolor="8"];
+-6800758760715057550 [label="/\\ mutex = \"b\"\n/\\ condition_variable = [a |-> FALSE, b |-> TRUE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"AcquireMutex_\", b |-> \"ReleaseMutex\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+7577568005042248200 -> -3589056990141219328 [label="",color="6",fontcolor="6"];
+-3589056990141219328 -> 1434151725477754962 [label="",color="8",fontcolor="8"];
+1434151725477754962 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> FALSE, b |-> TRUE]\n/\\ stack = [ a |->\n      << [ pc |-> \"Print1\",\n           thread |-> defaultInitValue,\n           procedure |-> \"mutex_wait\" ] >>,\n  b |-> <<>> ]\n/\\ pc = [a |-> \"AcquireMutex_\", b |-> \"Done\"]\n/\\ thread = [a |-> \"a\", b |-> defaultInitValue]"];
+-6800758760715057550 -> 1434151725477754962 [label="",color="7",fontcolor="7"];
+1434151725477754962 -> 660814261334948122 [label="",color="9",fontcolor="9"];
+660814261334948122 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> FALSE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"Print1\", b |-> \"Done\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+660814261334948122 -> -2263142154826727936 [label="",color="10",fontcolor="10"];
+-2263142154826727936 [label="/\\ mutex = \"a\"\n/\\ condition_variable = [a |-> FALSE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"ReleaseMutex_\", b |-> \"Done\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+-2263142154826727936 -> -3554411319741405672 [label="",color="11",fontcolor="11"];
+-3554411319741405672 [label="/\\ mutex = \"\"\n/\\ condition_variable = [a |-> FALSE, b |-> TRUE]\n/\\ stack = [a |-> <<>>, b |-> <<>>]\n/\\ pc = [a |-> \"Done\", b |-> \"Done\"]\n/\\ thread = [a |-> defaultInitValue, b |-> defaultInitValue]"];
+-3554411319741405672 -> -3554411319741405672 [label="",color="12",fontcolor="12"];
+{rank = same; 5338623821343872817;}
+{rank = same; 6772608435175600240;5499395562065004945;}
+{rank = same; 3825196272412133063;-8367990512832378260;}
+{rank = same; -1220663074108001990;62479124568865510;}
+{rank = same; 1352907249935964440;-6466522194997351489;}
+{rank = same; -7904412350680539618;7577568005042248200;}
+{rank = same; -3589056990141219328;-6800758760715057550;}
+{rank = same; 1434151725477754962;}
+{rank = same; 660814261334948122;}
+{rank = same; -2263142154826727936;}
+{rank = same; -3554411319741405672;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+Terminating [label="Terminating",fillcolor=12]
+ReleaseMutex [label="ReleaseMutex",fillcolor=7]
+AcquireMutex_ [label="AcquireMutex_",fillcolor=9]
+AcquireMutex [label="AcquireMutex",fillcolor=3]
+MutexWait_ReleaseMutex [label="MutexWait_ReleaseMutex",fillcolor=6]
+MutexWait_AwaitForConditionVariable [label="MutexWait_AwaitForConditionVariable",fillcolor=8]
+MutexWait [label="MutexWait",fillcolor=4]
+PulseAll [label="PulseAll",fillcolor=5]
+ReleaseMutex_ [label="ReleaseMutex_",fillcolor=11]
+AcquireMutex_a [label="AcquireMutex_a",fillcolor=2]
+Print1 [label="Print1",fillcolor=10]
+}}
