@@ -1,0 +1,471 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers, Sequences
+
+(*--algorithm spec
+variables 
+    mutex = "",
+    mutex_pulse_received = FALSE,
+    darkness = 0,
+    evil = 0,
+    fortress = 0,
+    threads_in_critical_section = 0;
+
+define
+    MutualExclusion == threads_in_critical_section <= 1
+end define;
+
+macro mutex_enter(thread) begin
+    await mutex = "";
+    mutex := thread;
+end macro;
+
+macro mutex_exit(thread) begin
+    assert mutex = thread;
+    mutex := "";
+end macro;
+
+macro mutex_pulse(thread) begin
+    assert mutex = thread;
+    mutex_pulse_received := TRUE;
+end macro;
+
+macro fortress_wait(block) begin
+    if block then
+        await fortress > 0;
+    end if;
+
+    if fortress = 0 then
+        ok := FALSE;
+    else
+        fortress := fortress - 1;
+        ok := TRUE;
+    end if;
+end macro;
+
+procedure mutex_wait(thread) begin
+    MutexWait_ReleaseMutex:
+        assert mutex = thread;
+        mutex := "";
+    MutexWait_WaitForPulse:
+        await mutex_pulse_received = TRUE;
+        mutex_pulse_received := FALSE;
+    MutexWait_AcquireMutex:
+        mutex_enter(thread);
+    return;
+end procedure;
+
+procedure inc_darkness() 
+    variables
+        tmp = 0;
+begin 
+    Inc_Load: tmp := darkness;
+    Inc_Add: darkness := tmp + 1;
+    return;
+end procedure;
+
+procedure inc_evil() 
+    variables
+        tmp = 0;
+begin 
+    Inc_Load: tmp := evil;
+    Inc_Add: evil := tmp + 1;
+    return;
+end procedure;
+
+procedure critical_section() begin 
+    CriticalSection_Enter: threads_in_critical_section := threads_in_critical_section + 1;
+    CriticalSection_Leave: threads_in_critical_section := threads_in_critical_section - 1;
+    return;
+end procedure;
+
+process a = "a"
+variables 
+    ok = FALSE;
+begin
+Loop:
+while TRUE do
+    IncDarkness: call inc_darkness();
+    IncEvil: call inc_evil();
+    Check:
+    if darkness # 2 /\ evil # 2 then
+        FortressWait_1: fortress_wait(FALSE);
+        if ok then 
+            FortressWait_2: fortress_wait(TRUE);
+            DecFortress: fortress :=  fortress - 1;
+            AcquireMutex: mutex_enter("a");
+            MutexWait: call mutex_wait("a");
+            CriticalSection: call critical_section();
+            ReleaseMutex: mutex_exit("a");
+        end if;
+    end if;
+end while;
+end process;
+
+process b = "b"
+begin
+Loop:
+while TRUE do
+    IncDarkness: call inc_darkness();
+    IncEvil: call inc_evil();
+    Check:
+    if darkness # 2 /\ evil = 2 then
+        AcquireMutex: mutex_enter("b");
+        MutexPulse: mutex_pulse("b");
+        MutexExit: mutex_exit("b");
+        CriticalSection: call critical_section();
+    end if;
+    FortressRelease: fortress := fortress + 1;
+    ResetDarkness: darkness := 0;
+    ResetEvil: evil := 0;
+end while;
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "cdb06b52" /\ chksum(tla) = "9b6b24b9")
+\* Label Inc_Load of procedure inc_darkness at line 61 col 15 changed to Inc_Load_
+\* Label Inc_Add of procedure inc_darkness at line 62 col 14 changed to Inc_Add_
+\* Label Loop of process a at line 86 col 1 changed to Loop_
+\* Label IncDarkness of process a at line 87 col 18 changed to IncDarkness_
+\* Label IncEvil of process a at line 88 col 14 changed to IncEvil_
+\* Label Check of process a at line 90 col 5 changed to Check_
+\* Label AcquireMutex of process a at line 18 col 5 changed to AcquireMutex_
+\* Label CriticalSection of process a at line 97 col 30 changed to CriticalSection_
+\* Procedure variable tmp of procedure inc_darkness at line 59 col 9 changed to tmp_
+CONSTANT defaultInitValue
+VARIABLES mutex, mutex_pulse_received, darkness, evil, fortress, 
+          threads_in_critical_section, pc, stack
+
+(* define statement *)
+MutualExclusion == threads_in_critical_section <= 1
+
+VARIABLES thread, tmp_, tmp, ok
+
+vars == << mutex, mutex_pulse_received, darkness, evil, fortress, 
+           threads_in_critical_section, pc, stack, thread, tmp_, tmp, ok >>
+
+ProcSet == {"a"} \cup {"b"}
+
+Init == (* Global variables *)
+        /\ mutex = ""
+        /\ mutex_pulse_received = FALSE
+        /\ darkness = 0
+        /\ evil = 0
+        /\ fortress = 0
+        /\ threads_in_critical_section = 0
+        (* Procedure mutex_wait *)
+        /\ thread = [ self \in ProcSet |-> defaultInitValue]
+        (* Procedure inc_darkness *)
+        /\ tmp_ = [ self \in ProcSet |-> 0]
+        (* Procedure inc_evil *)
+        /\ tmp = [ self \in ProcSet |-> 0]
+        (* Process a *)
+        /\ ok = FALSE
+        /\ stack = [self \in ProcSet |-> << >>]
+        /\ pc = [self \in ProcSet |-> CASE self = "a" -> "Loop_"
+                                        [] self = "b" -> "Loop"]
+
+MutexWait_ReleaseMutex(self) == /\ pc[self] = "MutexWait_ReleaseMutex"
+                                /\ Assert(mutex = thread[self], 
+                                          "Failure of assertion at line 47, column 9.")
+                                /\ mutex' = ""
+                                /\ pc' = [pc EXCEPT ![self] = "MutexWait_WaitForPulse"]
+                                /\ UNCHANGED << mutex_pulse_received, darkness, 
+                                                evil, fortress, 
+                                                threads_in_critical_section, 
+                                                stack, thread, tmp_, tmp, ok >>
+
+MutexWait_WaitForPulse(self) == /\ pc[self] = "MutexWait_WaitForPulse"
+                                /\ mutex_pulse_received = TRUE
+                                /\ mutex_pulse_received' = FALSE
+                                /\ pc' = [pc EXCEPT ![self] = "MutexWait_AcquireMutex"]
+                                /\ UNCHANGED << mutex, darkness, evil, 
+                                                fortress, 
+                                                threads_in_critical_section, 
+                                                stack, thread, tmp_, tmp, ok >>
+
+MutexWait_AcquireMutex(self) == /\ pc[self] = "MutexWait_AcquireMutex"
+                                /\ mutex = ""
+                                /\ mutex' = thread[self]
+                                /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+                                /\ thread' = [thread EXCEPT ![self] = Head(stack[self]).thread]
+                                /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+                                /\ UNCHANGED << mutex_pulse_received, darkness, 
+                                                evil, fortress, 
+                                                threads_in_critical_section, 
+                                                tmp_, tmp, ok >>
+
+mutex_wait(self) == MutexWait_ReleaseMutex(self)
+                       \/ MutexWait_WaitForPulse(self)
+                       \/ MutexWait_AcquireMutex(self)
+
+Inc_Load_(self) == /\ pc[self] = "Inc_Load_"
+                   /\ tmp_' = [tmp_ EXCEPT ![self] = darkness]
+                   /\ pc' = [pc EXCEPT ![self] = "Inc_Add_"]
+                   /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                   fortress, threads_in_critical_section, 
+                                   stack, thread, tmp, ok >>
+
+Inc_Add_(self) == /\ pc[self] = "Inc_Add_"
+                  /\ darkness' = tmp_[self] + 1
+                  /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+                  /\ tmp_' = [tmp_ EXCEPT ![self] = Head(stack[self]).tmp_]
+                  /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+                  /\ UNCHANGED << mutex, mutex_pulse_received, evil, fortress, 
+                                  threads_in_critical_section, thread, tmp, ok >>
+
+inc_darkness(self) == Inc_Load_(self) \/ Inc_Add_(self)
+
+Inc_Load(self) == /\ pc[self] = "Inc_Load"
+                  /\ tmp' = [tmp EXCEPT ![self] = evil]
+                  /\ pc' = [pc EXCEPT ![self] = "Inc_Add"]
+                  /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                  fortress, threads_in_critical_section, stack, 
+                                  thread, tmp_, ok >>
+
+Inc_Add(self) == /\ pc[self] = "Inc_Add"
+                 /\ evil' = tmp[self] + 1
+                 /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+                 /\ tmp' = [tmp EXCEPT ![self] = Head(stack[self]).tmp]
+                 /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+                 /\ UNCHANGED << mutex, mutex_pulse_received, darkness, 
+                                 fortress, threads_in_critical_section, thread, 
+                                 tmp_, ok >>
+
+inc_evil(self) == Inc_Load(self) \/ Inc_Add(self)
+
+CriticalSection_Enter(self) == /\ pc[self] = "CriticalSection_Enter"
+                               /\ threads_in_critical_section' = threads_in_critical_section + 1
+                               /\ pc' = [pc EXCEPT ![self] = "CriticalSection_Leave"]
+                               /\ UNCHANGED << mutex, mutex_pulse_received, 
+                                               darkness, evil, fortress, stack, 
+                                               thread, tmp_, tmp, ok >>
+
+CriticalSection_Leave(self) == /\ pc[self] = "CriticalSection_Leave"
+                               /\ threads_in_critical_section' = threads_in_critical_section - 1
+                               /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
+                               /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
+                               /\ UNCHANGED << mutex, mutex_pulse_received, 
+                                               darkness, evil, fortress, 
+                                               thread, tmp_, tmp, ok >>
+
+critical_section(self) == CriticalSection_Enter(self)
+                             \/ CriticalSection_Leave(self)
+
+Loop_ == /\ pc["a"] = "Loop_"
+         /\ pc' = [pc EXCEPT !["a"] = "IncDarkness_"]
+         /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, fortress, 
+                         threads_in_critical_section, stack, thread, tmp_, tmp, 
+                         ok >>
+
+IncDarkness_ == /\ pc["a"] = "IncDarkness_"
+                /\ stack' = [stack EXCEPT !["a"] = << [ procedure |->  "inc_darkness",
+                                                        pc        |->  "IncEvil_",
+                                                        tmp_      |->  tmp_["a"] ] >>
+                                                    \o stack["a"]]
+                /\ tmp_' = [tmp_ EXCEPT !["a"] = 0]
+                /\ pc' = [pc EXCEPT !["a"] = "Inc_Load_"]
+                /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                fortress, threads_in_critical_section, thread, 
+                                tmp, ok >>
+
+IncEvil_ == /\ pc["a"] = "IncEvil_"
+            /\ stack' = [stack EXCEPT !["a"] = << [ procedure |->  "inc_evil",
+                                                    pc        |->  "Check_",
+                                                    tmp       |->  tmp["a"] ] >>
+                                                \o stack["a"]]
+            /\ tmp' = [tmp EXCEPT !["a"] = 0]
+            /\ pc' = [pc EXCEPT !["a"] = "Inc_Load"]
+            /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                            fortress, threads_in_critical_section, thread, 
+                            tmp_, ok >>
+
+Check_ == /\ pc["a"] = "Check_"
+          /\ IF darkness # 2 /\ evil # 2
+                THEN /\ pc' = [pc EXCEPT !["a"] = "FortressWait_1"]
+                ELSE /\ pc' = [pc EXCEPT !["a"] = "Loop_"]
+          /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                          fortress, threads_in_critical_section, stack, thread, 
+                          tmp_, tmp, ok >>
+
+FortressWait_1 == /\ pc["a"] = "FortressWait_1"
+                  /\ IF FALSE
+                        THEN /\ fortress > 0
+                        ELSE /\ TRUE
+                  /\ IF fortress = 0
+                        THEN /\ ok' = FALSE
+                             /\ UNCHANGED fortress
+                        ELSE /\ fortress' = fortress - 1
+                             /\ ok' = TRUE
+                  /\ IF ok'
+                        THEN /\ pc' = [pc EXCEPT !["a"] = "FortressWait_2"]
+                        ELSE /\ pc' = [pc EXCEPT !["a"] = "Loop_"]
+                  /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                  threads_in_critical_section, stack, thread, 
+                                  tmp_, tmp >>
+
+FortressWait_2 == /\ pc["a"] = "FortressWait_2"
+                  /\ IF TRUE
+                        THEN /\ fortress > 0
+                        ELSE /\ TRUE
+                  /\ IF fortress = 0
+                        THEN /\ ok' = FALSE
+                             /\ UNCHANGED fortress
+                        ELSE /\ fortress' = fortress - 1
+                             /\ ok' = TRUE
+                  /\ pc' = [pc EXCEPT !["a"] = "DecFortress"]
+                  /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                  threads_in_critical_section, stack, thread, 
+                                  tmp_, tmp >>
+
+DecFortress == /\ pc["a"] = "DecFortress"
+               /\ fortress' = fortress - 1
+               /\ pc' = [pc EXCEPT !["a"] = "AcquireMutex_"]
+               /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                               threads_in_critical_section, stack, thread, 
+                               tmp_, tmp, ok >>
+
+AcquireMutex_ == /\ pc["a"] = "AcquireMutex_"
+                 /\ mutex = ""
+                 /\ mutex' = "a"
+                 /\ pc' = [pc EXCEPT !["a"] = "MutexWait"]
+                 /\ UNCHANGED << mutex_pulse_received, darkness, evil, 
+                                 fortress, threads_in_critical_section, stack, 
+                                 thread, tmp_, tmp, ok >>
+
+MutexWait == /\ pc["a"] = "MutexWait"
+             /\ /\ stack' = [stack EXCEPT !["a"] = << [ procedure |->  "mutex_wait",
+                                                        pc        |->  "CriticalSection_",
+                                                        thread    |->  thread["a"] ] >>
+                                                    \o stack["a"]]
+                /\ thread' = [thread EXCEPT !["a"] = "a"]
+             /\ pc' = [pc EXCEPT !["a"] = "MutexWait_ReleaseMutex"]
+             /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                             fortress, threads_in_critical_section, tmp_, tmp, 
+                             ok >>
+
+CriticalSection_ == /\ pc["a"] = "CriticalSection_"
+                    /\ stack' = [stack EXCEPT !["a"] = << [ procedure |->  "critical_section",
+                                                            pc        |->  "ReleaseMutex" ] >>
+                                                        \o stack["a"]]
+                    /\ pc' = [pc EXCEPT !["a"] = "CriticalSection_Enter"]
+                    /\ UNCHANGED << mutex, mutex_pulse_received, darkness, 
+                                    evil, fortress, 
+                                    threads_in_critical_section, thread, tmp_, 
+                                    tmp, ok >>
+
+ReleaseMutex == /\ pc["a"] = "ReleaseMutex"
+                /\ Assert(mutex = "a", 
+                          "Failure of assertion at line 23, column 5 of macro called at line 98, column 27.")
+                /\ mutex' = ""
+                /\ pc' = [pc EXCEPT !["a"] = "Loop_"]
+                /\ UNCHANGED << mutex_pulse_received, darkness, evil, fortress, 
+                                threads_in_critical_section, stack, thread, 
+                                tmp_, tmp, ok >>
+
+a == Loop_ \/ IncDarkness_ \/ IncEvil_ \/ Check_ \/ FortressWait_1
+        \/ FortressWait_2 \/ DecFortress \/ AcquireMutex_ \/ MutexWait
+        \/ CriticalSection_ \/ ReleaseMutex
+
+Loop == /\ pc["b"] = "Loop"
+        /\ pc' = [pc EXCEPT !["b"] = "IncDarkness"]
+        /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, fortress, 
+                        threads_in_critical_section, stack, thread, tmp_, tmp, 
+                        ok >>
+
+IncDarkness == /\ pc["b"] = "IncDarkness"
+               /\ stack' = [stack EXCEPT !["b"] = << [ procedure |->  "inc_darkness",
+                                                       pc        |->  "IncEvil",
+                                                       tmp_      |->  tmp_["b"] ] >>
+                                                   \o stack["b"]]
+               /\ tmp_' = [tmp_ EXCEPT !["b"] = 0]
+               /\ pc' = [pc EXCEPT !["b"] = "Inc_Load_"]
+               /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                               fortress, threads_in_critical_section, thread, 
+                               tmp, ok >>
+
+IncEvil == /\ pc["b"] = "IncEvil"
+           /\ stack' = [stack EXCEPT !["b"] = << [ procedure |->  "inc_evil",
+                                                   pc        |->  "Check",
+                                                   tmp       |->  tmp["b"] ] >>
+                                               \o stack["b"]]
+           /\ tmp' = [tmp EXCEPT !["b"] = 0]
+           /\ pc' = [pc EXCEPT !["b"] = "Inc_Load"]
+           /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                           fortress, threads_in_critical_section, thread, tmp_, 
+                           ok >>
+
+Check == /\ pc["b"] = "Check"
+         /\ IF darkness # 2 /\ evil = 2
+               THEN /\ pc' = [pc EXCEPT !["b"] = "AcquireMutex"]
+               ELSE /\ pc' = [pc EXCEPT !["b"] = "FortressRelease"]
+         /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, fortress, 
+                         threads_in_critical_section, stack, thread, tmp_, tmp, 
+                         ok >>
+
+AcquireMutex == /\ pc["b"] = "AcquireMutex"
+                /\ mutex = ""
+                /\ mutex' = "b"
+                /\ pc' = [pc EXCEPT !["b"] = "MutexPulse"]
+                /\ UNCHANGED << mutex_pulse_received, darkness, evil, fortress, 
+                                threads_in_critical_section, stack, thread, 
+                                tmp_, tmp, ok >>
+
+MutexPulse == /\ pc["b"] = "MutexPulse"
+              /\ Assert(mutex = "b", 
+                        "Failure of assertion at line 28, column 5 of macro called at line 113, column 21.")
+              /\ mutex_pulse_received' = TRUE
+              /\ pc' = [pc EXCEPT !["b"] = "MutexExit"]
+              /\ UNCHANGED << mutex, darkness, evil, fortress, 
+                              threads_in_critical_section, stack, thread, tmp_, 
+                              tmp, ok >>
+
+MutexExit == /\ pc["b"] = "MutexExit"
+             /\ Assert(mutex = "b", 
+                       "Failure of assertion at line 23, column 5 of macro called at line 114, column 20.")
+             /\ mutex' = ""
+             /\ pc' = [pc EXCEPT !["b"] = "CriticalSection"]
+             /\ UNCHANGED << mutex_pulse_received, darkness, evil, fortress, 
+                             threads_in_critical_section, stack, thread, tmp_, 
+                             tmp, ok >>
+
+CriticalSection == /\ pc["b"] = "CriticalSection"
+                   /\ stack' = [stack EXCEPT !["b"] = << [ procedure |->  "critical_section",
+                                                           pc        |->  "FortressRelease" ] >>
+                                                       \o stack["b"]]
+                   /\ pc' = [pc EXCEPT !["b"] = "CriticalSection_Enter"]
+                   /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                   fortress, threads_in_critical_section, 
+                                   thread, tmp_, tmp, ok >>
+
+FortressRelease == /\ pc["b"] = "FortressRelease"
+                   /\ fortress' = fortress + 1
+                   /\ pc' = [pc EXCEPT !["b"] = "ResetDarkness"]
+                   /\ UNCHANGED << mutex, mutex_pulse_received, darkness, evil, 
+                                   threads_in_critical_section, stack, thread, 
+                                   tmp_, tmp, ok >>
+
+ResetDarkness == /\ pc["b"] = "ResetDarkness"
+                 /\ darkness' = 0
+                 /\ pc' = [pc EXCEPT !["b"] = "ResetEvil"]
+                 /\ UNCHANGED << mutex, mutex_pulse_received, evil, fortress, 
+                                 threads_in_critical_section, stack, thread, 
+                                 tmp_, tmp, ok >>
+
+ResetEvil == /\ pc["b"] = "ResetEvil"
+             /\ evil' = 0
+             /\ pc' = [pc EXCEPT !["b"] = "Loop"]
+             /\ UNCHANGED << mutex, mutex_pulse_received, darkness, fortress, 
+                             threads_in_critical_section, stack, thread, tmp_, 
+                             tmp, ok >>
+
+b == Loop \/ IncDarkness \/ IncEvil \/ Check \/ AcquireMutex \/ MutexPulse
+        \/ MutexExit \/ CriticalSection \/ FortressRelease \/ ResetDarkness
+        \/ ResetEvil
+
+Next == a \/ b
+           \/ (\E self \in ProcSet:  \/ mutex_wait(self) \/ inc_darkness(self)
+                                     \/ inc_evil(self) \/ critical_section(self))
+
+Spec == Init /\ [][Next]_vars
+
+\* END TRANSLATION 
+====
