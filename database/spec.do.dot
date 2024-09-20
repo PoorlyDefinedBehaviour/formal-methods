@@ -1,0 +1,126 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+-7051750756039395388 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> NULL)\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")",style = filled]
+6930663757576704664 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> NULL)\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")",style = filled]
+-7051750756039395388 -> -1430119033887567394 [label="",color="2",fontcolor="2"];
+-1430119033887567394 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-7051750756039395388 -> -3397417743998957706 [label="",color="2",fontcolor="2"];
+-3397417743998957706 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-7051750756039395388 -> -3679907420239599088 [label="",color="2",fontcolor="2"];
+-3679907420239599088 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+6930663757576704664 -> 1309067187654112386 [label="",color="2",fontcolor="2"];
+1309067187654112386 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+6930663757576704664 -> 3135994169182553368 [label="",color="2",fontcolor="2"];
+3135994169182553368 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+6930663757576704664 -> 4013533180581423230 [label="",color="2",fontcolor="2"];
+4013533180581423230 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> NULL)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-1430119033887567394 -> -909822374899034883 [label="",color="3",fontcolor="3"];
+-909822374899034883 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-3397417743998957706 -> 4086726476592134311 [label="",color="3",fontcolor="3"];
+4086726476592134311 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-3679907420239599088 -> 1895001426237659697 [label="",color="3",fontcolor="3"];
+1895001426237659697 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+1309067187654112386 -> -8153905626150180428 [label="",color="3",fontcolor="3"];
+-8153905626150180428 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+3135994169182553368 -> 4086726476592134311 [label="",color="3",fontcolor="3"];
+4013533180581423230 -> 1895001426237659697 [label="",color="3",fontcolor="3"];
+-909822374899034883 -> 6911123016956096974 [label="",color="4",fontcolor="4"];
+6911123016956096974 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+4086726476592134311 -> 1430180694944562526 [label="",color="5",fontcolor="5"];
+1430180694944562526 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+1895001426237659697 -> 7949186037672574999 [label="",color="5",fontcolor="5"];
+7949186037672574999 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+-8153905626150180428 -> -3447150810931945601 [label="",color="4",fontcolor="4"];
+-3447150810931945601 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+6911123016956096974 -> -5018458935778513906 [label="",color="2",fontcolor="2"];
+-5018458935778513906 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+6911123016956096974 -> -9010061589996980078 [label="",color="2",fontcolor="2"];
+-9010061589996980078 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+6911123016956096974 -> -7006913251929188876 [label="",color="2",fontcolor="2"];
+-7006913251929188876 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+1430180694944562526 -> 5512846994534241467 [label="",color="2",fontcolor="2"];
+5512846994534241467 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+1430180694944562526 -> -3717376206838206406 [label="",color="2",fontcolor="2"];
+-3717376206838206406 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+1430180694944562526 -> -3432130819585122980 [label="",color="2",fontcolor="2"];
+-3432130819585122980 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+7949186037672574999 -> 3106609556133788407 [label="",color="2",fontcolor="2"];
+3106609556133788407 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+7949186037672574999 -> 2070740323032756262 [label="",color="2",fontcolor="2"];
+2070740323032756262 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+7949186037672574999 -> 39154053148564800 [label="",color="2",fontcolor="2"];
+39154053148564800 [label="/\\ result = (c1 :> NULL)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-3447150810931945601 -> -7642721360370511414 [label="",color="2",fontcolor="2"];
+-7642721360370511414 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-3447150810931945601 -> -6428020533352954590 [label="",color="2",fontcolor="2"];
+-6428020533352954590 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-3447150810931945601 -> -4972905975422212028 [label="",color="2",fontcolor="2"];
+-4972905975422212028 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-5018458935778513906 -> -4652340078594762643 [label="",color="3",fontcolor="3"];
+-4652340078594762643 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-9010061589996980078 -> 8254831833202408179 [label="",color="3",fontcolor="3"];
+8254831833202408179 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-7006913251929188876 -> 5797698436965439589 [label="",color="3",fontcolor="3"];
+5797698436965439589 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+5512846994534241467 -> -909822374899034883 [label="",color="3",fontcolor="3"];
+-3717376206838206406 -> 4086726476592134311 [label="",color="3",fontcolor="3"];
+-3432130819585122980 -> 1895001426237659697 [label="",color="3",fontcolor="3"];
+3106609556133788407 -> -8153905626150180428 [label="",color="3",fontcolor="3"];
+2070740323032756262 -> 4086726476592134311 [label="",color="3",fontcolor="3"];
+39154053148564800 -> 1895001426237659697 [label="",color="3",fontcolor="3"];
+-7642721360370511414 -> 3508284337882265308 [label="",color="3",fontcolor="3"];
+3508284337882265308 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-6428020533352954590 -> -8513516934123193051 [label="",color="3",fontcolor="3"];
+-8513516934123193051 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-4972905975422212028 -> -6114915611502682189 [label="",color="3",fontcolor="3"];
+-6114915611502682189 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-4652340078594762643 -> 6911123016956096974 [label="",color="4",fontcolor="4"];
+8254831833202408179 -> 6911123016956096974 [label="",color="5",fontcolor="5"];
+5797698436965439589 -> 2477286088406928519 [label="",color="5",fontcolor="5"];
+2477286088406928519 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+3508284337882265308 -> -3447150810931945601 [label="",color="4",fontcolor="4"];
+-8513516934123193051 -> -5935346491940855242 [label="",color="5",fontcolor="5"];
+-5935346491940855242 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Request\" @@ \"Database\" :> \"DB\")"];
+-6114915611502682189 -> -3447150810931945601 [label="",color="5",fontcolor="5"];
+2477286088406928519 -> -2465808880287727038 [label="",color="2",fontcolor="2"];
+-2465808880287727038 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+2477286088406928519 -> 5917819984105191566 [label="",color="2",fontcolor="2"];
+5917819984105191566 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+2477286088406928519 -> 5627235462743725544 [label="",color="2",fontcolor="2"];
+5627235462743725544 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-5935346491940855242 -> -976457967339012218 [label="",color="2",fontcolor="2"];
+-976457967339012218 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"read\"])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+-5935346491940855242 -> 8511398892381537598 [label="",color="2",fontcolor="2"];
+8511398892381537598 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-5935346491940855242 -> 7649703783409133656 [label="",color="2",fontcolor="2"];
+7649703783409133656 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"request\", request |-> \"write\", data |-> d2])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Wait\" @@ \"Database\" :> \"DB\")"];
+-2465808880287727038 -> -4402345536821566172 [label="",color="3",fontcolor="3"];
+-4402345536821566172 [label="/\\ result = (c1 :> d1)\n/\\ ghost_db_history = (c1 :> d2)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d2])\n/\\ db_value = d2\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+5917819984105191566 -> 8254831833202408179 [label="",color="3",fontcolor="3"];
+5627235462743725544 -> 5797698436965439589 [label="",color="3",fontcolor="3"];
+-976457967339012218 -> 5559629223418350485 [label="",color="3",fontcolor="3"];
+5559629223418350485 [label="/\\ result = (c1 :> d2)\n/\\ ghost_db_history = (c1 :> d1)\n/\\ query = (c1 :> [type |-> \"response\", result |-> d1])\n/\\ db_value = d1\n/\\ pc = (c1 :> \"Confirm\" @@ \"Database\" :> \"DB\")"];
+8511398892381537598 -> -8513516934123193051 [label="",color="3",fontcolor="3"];
+7649703783409133656 -> -6114915611502682189 [label="",color="3",fontcolor="3"];
+-4402345536821566172 -> -3447150810931945601 [label="",color="4",fontcolor="4"];
+5559629223418350485 -> 6911123016956096974 [label="",color="4",fontcolor="4"];
+{rank = same; -7051750756039395388;6930663757576704664;}
+{rank = same; -1430119033887567394;-3397417743998957706;-3679907420239599088;4013533180581423230;3135994169182553368;1309067187654112386;}
+{rank = same; 4086726476592134311;-8153905626150180428;-909822374899034883;1895001426237659697;}
+{rank = same; 6911123016956096974;7949186037672574999;-3447150810931945601;1430180694944562526;}
+{rank = same; -3717376206838206406;2070740323032756262;-5018458935778513906;5512846994534241467;-3432130819585122980;39154053148564800;3106609556133788407;-9010061589996980078;-7006913251929188876;-7642721360370511414;-6428020533352954590;-4972905975422212028;}
+{rank = same; -4652340078594762643;8254831833202408179;-6114915611502682189;-8513516934123193051;5797698436965439589;3508284337882265308;}
+{rank = same; 2477286088406928519;-5935346491940855242;}
+{rank = same; -2465808880287727038;5917819984105191566;-976457967339012218;5627235462743725544;8511398892381537598;7649703783409133656;}
+{rank = same; -4402345536821566172;5559629223418350485;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+Request [label="Request",fillcolor=2]
+Confirm [label="Confirm",fillcolor=4]
+Wait [label="Wait",fillcolor=5]
+DB [label="DB",fillcolor=3]
+}}
