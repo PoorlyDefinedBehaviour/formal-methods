@@ -1,0 +1,1 @@
+module Thread = { Thread, GlobalVariables };
