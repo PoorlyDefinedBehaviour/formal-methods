@@ -1,3 +1,5 @@
 *.toolbox
 *.out
 states/
+PGenerated/
+PCheckerOutput/

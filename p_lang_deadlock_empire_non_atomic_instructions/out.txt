@@ -1,0 +1,176 @@
+.. Searching for a P compiled file locally in folder ./PGenerated/
+.. Found a P compiled file: ./PGenerated/CSharp/net8.0/ProjectName.dll
+.. Checking ./PGenerated/CSharp/net8.0/ProjectName.dll
+.. Test case :: test0
+... Checker is using 'random' strategy (seed:420577087).
+..... Schedule #1
+<TestLog> Running test 'test0'.
+<CreateLog> MutualExclusion was created.
+<MonitorLog> MutualExclusion enters state 'Init'.
+<StateLog> TestMain(2) enters state 'Init'.
+<CreateLog> GlobalVariables(3) was created by TestMain(2).
+<CreateLog> Thread(4) was created by TestMain(2).
+<StateLog> GlobalVariables(3) enters state 'Init'.
+<CreateLog> Thread(5) was created by TestMain(2).
+<StateLog> Thread(4) enters state 'Init'.
+<StateLog> Thread(5) enters state 'Init'.
+<SendLog> 'Thread(4)' in state 'Init' sent event 'ReadRequest with payload (Thread(4))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(4) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(4))' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (0)' to 'Thread(4)'.
+<ReceiveLog> 'Thread(4)' dequeued event 'ReadResponse with payload (0)' and unblocked in state 'Init'.
+<CreateLog> Thread(6) was created by TestMain(2).
+<CreateLog> Thread(7) was created by TestMain(2).
+<PrintLog> read a=0
+<CreateLog> Thread(8) was created by TestMain(2).
+<StateLog> Thread(8) enters state 'Init'.
+<SendLog> 'Thread(8)' in state 'Init' sent event 'ReadRequest with payload (Thread(8))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(8) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<StateLog> Thread(6) enters state 'Init'.
+<SendLog> 'Thread(6)' in state 'Init' sent event 'ReadRequest with payload (Thread(6))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(6) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(4)' in state 'Init' sent event 'WriteRequest with payload (1)' to 'GlobalVariables(3)'.
+<StateLog> Thread(7) enters state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(8))' in state 'Init'.
+<CreateLog> Thread(9) was created by TestMain(2).
+<SendLog> 'Thread(4)' in state 'Init' sent event 'ReadRequest with payload (Thread(4))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(4) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<StateLog> Thread(9) enters state 'Init'.
+<SendLog> 'Thread(5)' in state 'Init' sent event 'ReadRequest with payload (Thread(5))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(5) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(9)' in state 'Init' sent event 'ReadRequest with payload (Thread(9))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(9) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(7)' in state 'Init' sent event 'ReadRequest with payload (Thread(7))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(7) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<CreateLog> Thread(10) was created by TestMain(2).
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (0)' to 'Thread(8)'.
+<ReceiveLog> 'Thread(8)' dequeued event 'ReadResponse with payload (0)' and unblocked in state 'Init'.
+<PrintLog> read a=0
+<StateLog> Thread(10) enters state 'Init'.
+<SendLog> 'Thread(10)' in state 'Init' sent event 'ReadRequest with payload (Thread(10))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(10) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(6))' in state 'Init'.
+<CreateLog> Thread(11) was created by TestMain(2).
+<CreateLog> Thread(12) was created by TestMain(2).
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (0)' to 'Thread(6)'.
+<ReceiveLog> 'Thread(6)' dequeued event 'ReadResponse with payload (0)' and unblocked in state 'Init'.
+<StateLog> Thread(11) enters state 'Init'.
+<StateLog> Thread(12) enters state 'Init'.
+<CreateLog> Thread(13) was created by TestMain(2).
+<StateLog> Thread(13) enters state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'WriteRequest with payload (1)' in state 'Init'.
+<SendLog> 'Thread(11)' in state 'Init' sent event 'ReadRequest with payload (Thread(11))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(11) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(13)' in state 'Init' sent event 'ReadRequest with payload (Thread(13))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(13) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(4))' in state 'Init'.
+<SendLog> 'Thread(12)' in state 'Init' sent event 'ReadRequest with payload (Thread(12))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(12) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(8)' in state 'Init' sent event 'WriteRequest with payload (1)' to 'GlobalVariables(3)'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(4)'.
+<ReceiveLog> 'Thread(4)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(5))' in state 'Init'.
+<SendLog> 'Thread(8)' in state 'Init' sent event 'ReadRequest with payload (Thread(8))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(8) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<PrintLog> read a=0
+<SendLog> 'Thread(6)' in state 'Init' sent event 'WriteRequest with payload (1)' to 'GlobalVariables(3)'.
+<MonitorLog> MutualExclusion is processing event 'EnterCriticalSection' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(5)'.
+<ReceiveLog> 'Thread(5)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<SendLog> 'Thread(4)' in state 'Init' sent event 'EnterCriticalSection' to 'Thread(4)'.
+<DequeueLog> 'Thread(4)' dequeued event 'EnterCriticalSection' in state 'Init'.
+<GotoLog> Thread(4) is transitioning from state 'Init' to state 'InCriticalSection'.
+<StateLog> Thread(4) exits state 'Init'.
+<StateLog> Thread(4) enters state 'InCriticalSection'.
+<MonitorLog> MutualExclusion is processing event 'LeaveCriticalSection' in state 'Init'.
+<SendLog> 'Thread(4)' in state 'InCriticalSection' sent event 'LeaveCriticalSection' to 'Thread(4)'.
+<SendLog> 'Thread(6)' in state 'Init' sent event 'ReadRequest with payload (Thread(6))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(6) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'Thread(4)' dequeued event 'LeaveCriticalSection' in state 'InCriticalSection'.
+<RaiseLog> 'Thread(4)' raised event 'PHalt' in state 'InCriticalSection'.
+<StateLog> Thread(4) exits state 'InCriticalSection'.
+<PopLog> Thread(4) popped state InCriticalSection due to unhandled event 'PChecker.PRuntime.PHalt'.
+<ExceptionLog> Thread(4) running action '' in state 'InCriticalSection' threw exception 'UnhandledEventException'.
+<ExceptionLog> Thread(4) running action '' in state 'InCriticalSection' chose to handle exception 'UnhandledEventException'.
+<HaltLog> Thread(4) halted with 0 events in its inbox.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(9))' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(9)'.
+<ReceiveLog> 'Thread(9)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<PrintLog> read a=1
+<PrintLog> read a=1
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(7))' in state 'Init'.
+<SendLog> 'Thread(9)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<SendLog> 'Thread(5)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(7)'.
+<ReceiveLog> 'Thread(7)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<PrintLog> read a=1
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(10))' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(10)'.
+<ReceiveLog> 'Thread(10)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<SendLog> 'Thread(7)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(11))' in state 'Init'.
+<PrintLog> read a=1
+<SendLog> 'Thread(9)' in state 'Init' sent event 'ReadRequest with payload (Thread(9))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(9) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(5)' in state 'Init' sent event 'ReadRequest with payload (Thread(5))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(5) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'Thread(10)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<SendLog> 'Thread(10)' in state 'Init' sent event 'ReadRequest with payload (Thread(10))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(10) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(11)'.
+<ReceiveLog> 'Thread(11)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<SendLog> 'Thread(7)' in state 'Init' sent event 'ReadRequest with payload (Thread(7))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(7) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(13))' in state 'Init'.
+<PrintLog> read a=1
+<SendLog> 'Thread(11)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<SendLog> 'Thread(11)' in state 'Init' sent event 'ReadRequest with payload (Thread(11))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(11) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(13)'.
+<ReceiveLog> 'Thread(13)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(12))' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(12)'.
+<ReceiveLog> 'Thread(12)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'WriteRequest with payload (1)' in state 'Init'.
+<PrintLog> read a=1
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(8))' in state 'Init'.
+<SendLog> 'Thread(13)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<SendLog> 'Thread(13)' in state 'Init' sent event 'ReadRequest with payload (Thread(13))' to 'GlobalVariables(3)'.
+<ReceiveLog> Thread(13) is waiting to dequeue an event of type 'ReadResponse' or 'PHalt' in state 'Init'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(8)'.
+<ReceiveLog> 'Thread(8)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'WriteRequest with payload (1)' in state 'Init'.
+<PrintLog> read a=1
+<MonitorLog> MutualExclusion is processing event 'EnterCriticalSection' in state 'Init'.
+<DequeueLog> 'GlobalVariables(3)' dequeued event 'ReadRequest with payload (Thread(6))' in state 'Init'.
+<SendLog> 'Thread(8)' in state 'Init' sent event 'EnterCriticalSection' to 'Thread(8)'.
+<SendLog> 'GlobalVariables(3)' in state 'Init' sent event 'ReadResponse with payload (1)' to 'Thread(6)'.
+<ReceiveLog> 'Thread(6)' dequeued event 'ReadResponse with payload (1)' and unblocked in state 'Init'.
+<SendLog> 'Thread(12)' in state 'Init' sent event 'WriteRequest with payload (2)' to 'GlobalVariables(3)'.
+<MonitorLog> MutualExclusion is processing event 'EnterCriticalSection' in state 'Init'.
+<ErrorLog> Assertion Failed: PSpec/MutualExclusion.p:10:7 thread entered critical section whiler another thread is there
+<StrategyLog> Found bug using 'random' strategy.
+Error: Assertion Failed: PSpec/MutualExclusion.p:10:7 thread entered critical section whiler another thread is there
+... Emitting verbose logs:
+..... Writing PCheckerOutput/BugFinding/ProjectName_0_verbose.trace.json
+Checker found a bug.
+... Emitting traces:
+..... Writing PCheckerOutput/BugFinding/ProjectName_0_0.trace.json
+..... Writing PCheckerOutput/BugFinding/ProjectName_0_0.dgml
+..... Writing PCheckerOutput/BugFinding/ProjectName_0_0.schedule
+... Elapsed 7.62 sec and used 0 GB.
+... ### Process 0 is terminating
+... Emitting coverage reports:
+..... Writing PCheckerOutput/BugFinding/ProjectName.dgml
+..... Writing PCheckerOutput/BugFinding/ProjectName.coverage.txt
+..... Writing PCheckerOutput/BugFinding/ProjectName.sci
+... Checking statistics:
+..... Found 1 bug.
+... Scheduling statistics:
+..... Explored 1 schedule
+..... Found 100.00% buggy schedules.
+..... Number of scheduling points in terminating schedules: 102 (min), 102 (avg), 102 (max).
+..... Writing PCheckerOutput/BugFinding/ProjectName_pchecker_summary.txt
+... Elapsed 7.73 sec and used 0 GB.
+. Done
+~~ [PTool]: Thanks for using P! ~~
