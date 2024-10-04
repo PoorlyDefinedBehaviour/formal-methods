@@ -1,0 +1,116 @@
+.. Searching for a P compiled file locally in folder ./PGenerated/
+.. Found a P compiled file: ./PGenerated/CSharp/net8.0/SingleDecreePaxos.dll
+.. Checking ./PGenerated/CSharp/net8.0/SingleDecreePaxos.dll
+.. Test case :: tcBasic
+... Checker is using 'random' strategy (seed:3142534791).
+..... Schedule #1
+<TestLog> Running test 'tcBasic'.
+<CreateLog> EventuallyDecideOnSameValue was created.
+<MonitorLog> EventuallyDecideOnSameValue enters state 'Init'.
+<StateLog> TestBasic(2) enters state 'Init'.
+<AnnounceLog> 'TestBasic(2)' announced event 'spec_EventuallyDecideOnSameValue_numNodes' with payload 3.
+<MonitorLog> EventuallyDecideOnSameValue is processing event 'spec_EventuallyDecideOnSameValue_numNodes with payload (3)' in state 'Init'.
+<MonitorLog> Monitor 'EventuallyDecideOnSameValue' raised event 'GotoStateEvent' in state 'Init'.
+<MonitorLog> EventuallyDecideOnSameValue exits state 'Init'.
+<MonitorLog> EventuallyDecideOnSameValue enters hot state 'WaitingForDecision'.
+<CreateLog> Node(3) was created by TestBasic(2).
+<CreateLog> Node(4) was created by TestBasic(2).
+<CreateLog> Node(5) was created by TestBasic(2).
+<StateLog> Node(3) enters state 'Init'.
+<StateLog> Node(5) enters state 'Init'.
+<SendLog> 'TestBasic(2)' in state 'Init' sent event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' to 'Node(3)'.
+<ReceiveLog> TestBasic(2) is waiting to dequeue an event of type 'eSetNodesResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'Node(3)' dequeued event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' in state 'Init'.
+<SendLog> 'Node(3)' in state 'Init' sent event 'eSetNodesResponse' to 'TestBasic(2)'.
+<ReceiveLog> 'TestBasic(2)' dequeued event 'eSetNodesResponse' and unblocked in state 'Init'.
+<GotoLog> Node(3) is transitioning from state 'Init' to state 'Restarting'.
+<StateLog> Node(3) exits state 'Init'.
+<StateLog> Node(3) enters state 'Restarting'.
+<GotoLog> Node(3) is transitioning from state 'Restarting' to state 'HandleRequests'.
+<StateLog> Node(3) exits state 'Restarting'.
+<StateLog> Node(3) enters state 'HandleRequests'.
+<StateLog> Node(4) enters state 'Init'.
+<SendLog> 'TestBasic(2)' in state 'Init' sent event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' to 'Node(4)'.
+<ReceiveLog> TestBasic(2) is waiting to dequeue an event of type 'eSetNodesResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'Node(4)' dequeued event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' in state 'Init'.
+<SendLog> 'Node(4)' in state 'Init' sent event 'eSetNodesResponse' to 'TestBasic(2)'.
+<ReceiveLog> 'TestBasic(2)' dequeued event 'eSetNodesResponse' and unblocked in state 'Init'.
+<GotoLog> Node(4) is transitioning from state 'Init' to state 'Restarting'.
+<StateLog> Node(4) exits state 'Init'.
+<StateLog> Node(4) enters state 'Restarting'.
+<GotoLog> Node(4) is transitioning from state 'Restarting' to state 'HandleRequests'.
+<StateLog> Node(4) exits state 'Restarting'.
+<StateLog> Node(4) enters state 'HandleRequests'.
+<SendLog> 'TestBasic(2)' in state 'Init' sent event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' to 'Node(5)'.
+<ReceiveLog> TestBasic(2) is waiting to dequeue an event of type 'eSetNodesResponse' or 'PHalt' in state 'Init'.
+<DequeueLog> 'Node(5)' dequeued event 'eSetNodes with payload (<m:TestBasic(2), nodes:(Node(3), Node(4), Node(5)), >)' in state 'Init'.
+<SendLog> 'Node(5)' in state 'Init' sent event 'eSetNodesResponse' to 'TestBasic(2)'.
+<ReceiveLog> 'TestBasic(2)' dequeued event 'eSetNodesResponse' and unblocked in state 'Init'.
+<GotoLog> Node(5) is transitioning from state 'Init' to state 'Restarting'.
+<StateLog> Node(5) exits state 'Init'.
+<StateLog> Node(5) enters state 'Restarting'.
+<GotoLog> Node(5) is transitioning from state 'Restarting' to state 'HandleRequests'.
+<StateLog> Node(5) exits state 'Restarting'.
+<StateLog> Node(5) enters state 'HandleRequests'.
+<GotoLog> TestBasic(2) is transitioning from state 'Init' to state 'SendRequests'.
+<StateLog> TestBasic(2) exits state 'Init'.
+<StateLog> TestBasic(2) enters state 'SendRequests'.
+<DefaultLog> TestBasic(2) is executing the default handler in state 'SendRequests'.
+<SendLog> 'TestBasic(2)' in state 'SendRequests' sent event 'eTriggerPrepare' to 'Node(4)'.
+<DequeueLog> 'Node(4)' dequeued event 'eTriggerPrepare' in state 'HandleRequests'.
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' to 'Node(3)'.
+<DequeueLog> 'Node(3)' dequeued event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' in state 'HandleRequests'.
+<PrintLog> debug: ePrepare proposalNumber=1 minProposalNumber=0
+<SendLog> 'Node(3)' in state 'HandleRequests' sent event 'ePrepareResp with payload (<node:Node(3), requestId:<nodeId:2, requestNumber:1, >, nodeId:1, proposalNumber:1, acceptedProposalNumber:0, acceptedValue:0, >)' to 'Node(4)'.
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' to 'Node(4)'.
+<DefaultLog> TestBasic(2) is executing the default handler in state 'SendRequests'.
+<SendLog> 'TestBasic(2)' in state 'SendRequests' sent event 'eTriggerPrepare' to 'Node(4)'.
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' to 'Node(5)'.
+<DequeueLog> 'Node(5)' dequeued event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' in state 'HandleRequests'.
+<PrintLog> debug: ePrepare proposalNumber=1 minProposalNumber=0
+<DefaultLog> TestBasic(2) is executing the default handler in state 'SendRequests'.
+<SendLog> 'Node(5)' in state 'HandleRequests' sent event 'ePrepareResp with payload (<node:Node(5), requestId:<nodeId:2, requestNumber:1, >, nodeId:3, proposalNumber:1, acceptedProposalNumber:0, acceptedValue:0, >)' to 'Node(4)'.
+<GotoLog> TestBasic(2) is transitioning from state 'SendRequests' to state 'DoneSendingRequests'.
+<StateLog> TestBasic(2) exits state 'SendRequests'.
+<StateLog> TestBasic(2) enters state 'DoneSendingRequests'.
+<DequeueLog> 'Node(4)' dequeued event 'ePrepareResp with payload (<node:Node(3), requestId:<nodeId:2, requestNumber:1, >, nodeId:1, proposalNumber:1, acceptedProposalNumber:0, acceptedValue:0, >)' in state 'HandleRequests'.
+<DequeueLog> 'Node(4)' dequeued event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, proposalNumber:1, >)' in state 'HandleRequests'.
+<PrintLog> debug: ePrepare proposalNumber=1 minProposalNumber=0
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepareResp with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:1, >, nodeId:2, proposalNumber:1, acceptedProposalNumber:0, acceptedValue:0, >)' to 'Node(4)'.
+<DequeueLog> 'Node(4)' dequeued event 'eTriggerPrepare' in state 'HandleRequests'.
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:2, >, proposalNumber:2, >)' to 'Node(3)'.
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:2, >, proposalNumber:2, >)' to 'Node(4)'.
+<DequeueLog> 'Node(3)' dequeued event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:2, >, proposalNumber:2, >)' in state 'HandleRequests'.
+<PrintLog> debug: ePrepare proposalNumber=2 minProposalNumber=1
+<SendLog> 'Node(4)' in state 'HandleRequests' sent event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:2, >, proposalNumber:2, >)' to 'Node(5)'.
+<SendLog> 'Node(3)' in state 'HandleRequests' sent event 'ePrepareResp with payload (<node:Node(3), requestId:<nodeId:2, requestNumber:2, >, nodeId:1, proposalNumber:2, acceptedProposalNumber:0, acceptedValue:0, >)' to 'Node(4)'.
+<DequeueLog> 'Node(5)' dequeued event 'ePrepare with payload (<node:Node(4), requestId:<nodeId:2, requestNumber:2, >, proposalNumber:2, >)' in state 'HandleRequests'.
+<PrintLog> debug: ePrepare proposalNumber=2 minProposalNumber=1
+<SendLog> 'Node(5)' in state 'HandleRequests' sent event 'ePrepareResp with payload (<node:Node(5), requestId:<nodeId:2, requestNumber:2, >, nodeId:3, proposalNumber:2, acceptedProposalNumber:0, acceptedValue:0, >)' to 'Node(4)'.
+<DequeueLog> 'Node(4)' dequeued event 'ePrepareResp with payload (<node:Node(5), requestId:<nodeId:2, requestNumber:1, >, nodeId:3, proposalNumber:1, acceptedProposalNumber:0, acceptedValue:0, >)' in state 'HandleRequests'.
+<ErrorLog> Assertion Failed: PSrc/Node.p:195:3 unexpected acceptedValue: 0
+<StrategyLog> Found bug using 'random' strategy.
+Error: Assertion Failed: PSrc/Node.p:195:3 unexpected acceptedValue: 0
+... Emitting verbose logs:
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos_0_verbose.trace.json
+Checker found a bug.
+... Emitting traces:
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos_0_0.trace.json
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos_0_0.dgml
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos_0_0.schedule
+... Elapsed 0.27 sec and used 0 GB.
+... ### Process 0 is terminating
+... Emitting coverage reports:
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos.dgml
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos.coverage.txt
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos.sci
+... Checking statistics:
+..... Found 1 bug.
+... Scheduling statistics:
+..... Explored 1 schedule
+..... Found 100.00% buggy schedules.
+..... Number of scheduling points in terminating schedules: 52 (min), 52 (avg), 52 (max).
+..... Writing PCheckerOutput/BugFinding/SingleDecreePaxos_pchecker_summary.txt
+... Elapsed 0.41 sec and used 0 GB.
+. Done
+~~ [PTool]: Thanks for using P! ~~

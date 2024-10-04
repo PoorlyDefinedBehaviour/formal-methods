@@ -1,3 +1,3 @@
 test tcBasic [main=TestBasic]:
-  assert Validity in
+  assert EventuallyDecideOnSameValue in
   (union Node, {TestBasic});
