@@ -7,19 +7,18 @@ spec Consistency observes e_Storage_eWrite_ValueWritten {
       expected_next_value = 1;
       expected_final_value = 3;
     }
-    on e_Storage_eWrite_ValueWritten do (value: int) {
-      assert expected_next_value == value, format("e_Storage_eWrite_ValueWritten: expected {0} but got {1}", expected_next_value, value);
+    on e_Storage_eWrite_ValueWritten do (req: Storage_eWrite_ValueWritten) {
+      assert expected_next_value == req.value, format("e_Storage_eWrite_ValueWritten: expected {0} but got {1}", expected_next_value, req);
       expected_next_value = expected_next_value + 1;
-      if(value == expected_final_value) {
+      if(req.value == expected_final_value) {
         goto Done;
       }
-      print format("debug: Spec received e_Storage_eWrite_ValueWritten event: {0}", value);
     }
   }
 
   state Done {
-    on e_Storage_eWrite_ValueWritten do (_value: int) {
-      assert false, "shouldn't have received more writes";
+    on e_Storage_eWrite_ValueWritten do (req: Storage_eWrite_ValueWritten) {
+      assert false, format("shouldn't have received more writes but received: {0}", req);
     }
   }
 }

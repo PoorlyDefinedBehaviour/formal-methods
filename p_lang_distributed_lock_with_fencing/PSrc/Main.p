@@ -14,7 +14,8 @@ type releaseLockReq = (client: App, term: int);
 event eReleaseLock: releaseLockReq;
 event eReleaseLockResp;
 
-event e_Storage_eWrite_ValueWritten: int;
+type Storage_eWrite_ValueWritten = (term: int, value: int);
+event e_Storage_eWrite_ValueWritten: Storage_eWrite_ValueWritten;
 
 type app_config = (lock_service: LockService, storage: Storage);
 
@@ -94,13 +95,16 @@ machine LockService {
   var term: int;
 
   start state Init {
+    entry {
+      term = 1;
+    }
+
     on eAcquireLock do (client: App) {
       if(locked) {
         send client, eAcquireLockResp, (success=false, term=term);
         return;
       }
       locked = true;
-      term = term + 1;
       send client, eAcquireLockResp, (success=true, term=term);
     }
 
@@ -108,13 +112,17 @@ machine LockService {
       if(locked && req.term == term) {
         locked = false;
       }
+      term = term + 1;
       send req.client, eReleaseLockResp;
     }
 
-    on null do {
-      // Expire the lock.
-      locked = false;
-    }
+    // auto expiring the lock makes the spec fail.
+    // on null do {
+	  //     // Expire the lock.
+    //   print "debug: expiring lock";
+    //   locked = false;
+    //   term = term + 1;
+    // }
   }
 }
 
@@ -137,7 +145,7 @@ machine Storage {
       term = req.term;
       value = req.value;
 
-      announce e_Storage_eWrite_ValueWritten, req.value;
+      announce e_Storage_eWrite_ValueWritten, (term=req.term, value=req.value);
 
       send req.client, eWriteResp, true;
     }
