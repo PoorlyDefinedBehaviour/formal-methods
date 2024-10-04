@@ -1,0 +1,47 @@
+.. Searching for a P compiled file locally in folder ./PGenerated/
+.. Found a P compiled file: ./PGenerated/CSharp/net8.0/HelloWorld.dll
+.. Checking ./PGenerated/CSharp/net8.0/HelloWorld.dll
+.. Test case :: test0
+... Checker is using 'random' strategy (seed:1880720942).
+..... Schedule #1
+<TestLog> Running test 'test0'.
+<CreateLog> Durable was created.
+<MonitorLog> Durable enters state 'Init'.
+<StateLog> TestDriver(2) enters state 'Init'.
+<CreateLog> HttpServer(3) was created by TestDriver(2).
+<StateLog> HttpServer(3) enters state 'Init'.
+<CreateLog> Log(4) was created by TestDriver(2).
+<CreateLog> App(5) was created by TestDriver(2).
+<StateLog> Log(4) enters state 'Init'.
+<StateLog> App(5) enters state 'Init'.
+<GotoLog> App(5) is transitioning from state 'Init' to state 'PerformWorkflow'.
+<StateLog> App(5) exits state 'Init'.
+<StateLog> App(5) enters state 'PerformWorkflow'.
+<SendLog> 'App(5)' in state 'PerformWorkflow' sent event 'eIncrementReq with payload (App(5))' to 'Log(4)'.
+<ReceiveLog> App(5) is waiting to dequeue an event of type 'eIncrementResp' or 'PHalt' in state 'PerformWorkflow'.
+<DequeueLog> 'Log(4)' dequeued event 'eIncrementReq with payload (App(5))' in state 'Init'.
+<SendLog> 'Log(4)' in state 'Init' sent event 'eIncrementReq with payload (Log(4))' to 'HttpServer(3)'.
+<ReceiveLog> Log(4) is waiting to dequeue an event of type 'eIncrementResp' or 'PHalt' in state 'Init'.
+<DequeueLog> 'HttpServer(3)' dequeued event 'eIncrementReq with payload (Log(4))' in state 'Init'.
+<AnnounceLog> 'HttpServer(3)' announced event 'e_HttpServer_received_eIncrementReq'.
+<MonitorLog> Durable is processing event 'e_HttpServer_received_eIncrementReq' in state 'Init'.
+<SendLog> 'HttpServer(3)' in state 'Init' sent event 'eIncrementResp with payload (<success:False, x:-1, >)' to 'Log(4)'.
+<ReceiveLog> 'Log(4)' dequeued event 'eIncrementResp with payload (<success:False, x:-1, >)' and unblocked in state 'Init'.
+<SendLog> 'Log(4)' in state 'Init' sent event 'eIncrementResp with payload (<success:False, x:-1, >)' to 'App(5)'.
+<ReceiveLog> 'App(5)' dequeued event 'eIncrementResp with payload (<success:False, x:-1, >)' and unblocked in state 'PerformWorkflow'.
+... Emitting verbose logs:
+..... Writing PCheckerOutput/BugFinding/HelloWorld_0_verbose.trace.json
+... ### Process 0 is terminating
+... Emitting coverage reports:
+..... Writing PCheckerOutput/BugFinding/HelloWorld.dgml
+..... Writing PCheckerOutput/BugFinding/HelloWorld.coverage.txt
+..... Writing PCheckerOutput/BugFinding/HelloWorld.sci
+... Checking statistics:
+..... Found 0 bugs.
+... Scheduling statistics:
+..... Explored 1 schedule
+..... Number of scheduling points in terminating schedules: 19 (min), 19 (avg), 19 (max).
+..... Writing PCheckerOutput/BugFinding/HelloWorld_pchecker_summary.txt
+... Elapsed 0.15 sec and used 0 GB.
+. Done
+~~ [PTool]: Thanks for using P! ~~
