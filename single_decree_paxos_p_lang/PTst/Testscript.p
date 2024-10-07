@@ -1,3 +1,3 @@
 test tcBasic [main=TestBasic]:
   assert EventuallyDecideOnSameValue in
-  (union Node, {TestBasic});
+  (union Node, {TestBasic, FailureInjector});

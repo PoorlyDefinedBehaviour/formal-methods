@@ -1,14 +1,14 @@
-type requestId = (nodeId: int, requestNumber: int);
+type request_id = (node_id: int, request_number: int);
 
-type prepareReq = (node: Node, requestId: requestId, proposalNumber: int);
-type prepareResp = (node: Node, requestId: requestId, nodeId: int, proposalNumber: int, acceptedProposalNumber: int, acceptedValue: int);
+type prepareReq = (node: Node, request_id: request_id, proposal_number: int);
+type prepareResp = (node: Node, request_id: request_id, node_id: int, proposal_number: int, accepted_proposal_number: int, accepted_value: int);
 
-type acceptReq = (node: Node, requestId: requestId, nodeId: int, proposalNumber: int, value: int);
-type acceptResp = (requestId: requestId, nodeId: int, minProposalNumber: int);
+type acceptReq = (node: Node, request_id: request_id, node_id: int, proposal_number: int, value: int);
+type acceptResp = (request_id: request_id, node_id: int, min_proposal_number: int);
 
-type valueAcceptedReq = (nodeId: int, value: int);
+type valueAcceptedReq = (node_id: int, value: int);
 
-type setNodesReq = (m:machine, nodes:seq[Node]);
+type setNodesReq = (m: machine, nodes: seq[Node]);
 event eSetNodes: setNodesReq;
 event eSetNodesResponse;
 
@@ -31,22 +31,22 @@ enum MessageType {
 
 machine Node {
   // Stored on durable storage.
-  var minProposalNumber: int;
-  var acceptedProposalNumber: int;
-  // -1 means unset.
-  var acceptedValue: int;
+  var min_proposal_number: int;
+  var accepted_proposal_number: int;
+  // 0 means unset.
+  var accepted_value: int;
+  var next_proposal_number: int;
 
   // Stored in memory.
   var id: int;
   var nodes: seq[Node];
-  var nextProposalNumber: int;
-  var nextRequestNumber: int;
-  var requests: map[(MessageType, int), (value: int, responses: set[(nodeId: int, acceptedProposalNumber: int, acceptedValue: int)])];
+  var requests: map[(MessageType, int), (value: int, responses: set[(node_id: int, accepted_proposal_number: int, accepted_value: int)])];
 
   start state Init {
-    entry (nodeId: int) {
-      assert nodeId > 0;
-      id = nodeId;
+    entry (node_id: int) {
+      assert node_id > 0;
+      id = node_id;
+      next_proposal_number = 1;
     }
 
     on eSetNodes do (req: setNodesReq) {
@@ -63,47 +63,47 @@ machine Node {
 
   state Restarting {
     entry {
-      nextProposalNumber = 1;
-      nextRequestNumber = 1;
-      requests = default(map[(MessageType, int), (value: int, responses: set[(nodeId: int, acceptedProposalNumber: int, acceptedValue: int)])]);
+      requests = default(map[(MessageType, int), (value: int, responses: set[(node_id: int, accepted_proposal_number: int, accepted_value: int)])]);
       goto HandleRequests;
     }
   }
 
   state HandleRequests {
-    // ignore eRestart;
+    ignore eRestart;
 
-    // on eCrash goto Crashed;
+    on eCrash goto Crashed;
     
     on eTriggerPrepare do {
-      var emptySet: set[(nodeId: int, acceptedProposalNumber: int, acceptedValue: int)];
-      var proposalNumber: int;
-      var requestId: requestId;
+      var emptySet: set[(node_id: int, accepted_proposal_number: int, accepted_value: int)];
+      var proposal_number: int;
+      var request_id: request_id;
 
-      proposalNumber = nextProposalNumber;
-      requestId = (nodeId=id, requestNumber=nextRequestNumber);
+      proposal_number = next_proposal_number;
+      request_id = (node_id=id, request_number=proposal_number);
 
-      nextRequestNumber = nextRequestNumber + 1;
-      nextProposalNumber = nextProposalNumber + 1;
+      next_proposal_number = next_proposal_number + 1;
 
-      requests[(PREPARE, proposalNumber)] = ((value=id, responses=emptySet));
+      requests[(PREPARE, proposal_number)] = ((value=id, responses=emptySet));
 
-      broadcast(this, nodes, ePrepare, (node=this,requestId=requestId, proposalNumber=proposalNumber));
+      broadcast(this, nodes, ePrepare, (node=this,request_id=request_id, proposal_number=proposal_number));
     }
 
     on ePrepare do (req: prepareReq) {
-      print format("debug: ePrepare proposalNumber={0} minProposalNumber={1}", req.proposalNumber, minProposalNumber);
-      if (req.proposalNumber > minProposalNumber)
+      assert req.request_id.node_id > 0;
+      assert req.request_id.request_number > 0;
+      assert req.proposal_number > 0;
+
+      if (req.proposal_number > min_proposal_number)
       {
-        minProposalNumber = req.proposalNumber;
+        min_proposal_number = req.proposal_number;
 
         send req.node, ePrepareResp, (
           node=this,
-          requestId=req.requestId,
-          nodeId=id,
-          proposalNumber=req.proposalNumber, 
-          acceptedProposalNumber=acceptedProposalNumber, 
-          acceptedValue=acceptedValue
+          request_id=req.request_id,
+          node_id=id,
+          proposal_number=req.proposal_number, 
+          accepted_proposal_number=accepted_proposal_number, 
+          accepted_value=accepted_value
         );
       }
     }
@@ -111,59 +111,77 @@ machine Node {
     on ePrepareResp do (req: prepareResp) {
       var msgId: (MessageType, int); 
       var value: int;
-      var emptySet: set[(nodeId: int, acceptedProposalNumber: int, acceptedValue: int)];
+      var emptySet: set[(node_id: int, accepted_proposal_number: int, accepted_value: int)];
 
-      msgId = (PREPARE, req.proposalNumber);
+      assert req.request_id.node_id > 0;
+      assert req.request_id.request_number > 0;
+      assert req.node_id > 0;
+      assert req.proposal_number > 0;
+      assert (req.accepted_proposal_number == 0 && req.accepted_value == 0) || (req.accepted_proposal_number > 0 && req.accepted_value > 0);
+
+      print format("debug: received ePrepareResp node={0} {1}", id, req);
+
+      msgId = (PREPARE, req.proposal_number);
 
       if (!(msgId in requests))
       {
         return;
       }
 
-      requests[msgId].responses += ((nodeId=req.nodeId,acceptedProposalNumber=req.acceptedProposalNumber, acceptedValue=req.acceptedValue));
+      requests[msgId].responses += ((node_id=req.node_id,accepted_proposal_number=req.accepted_proposal_number, accepted_value=req.accepted_value));
 
       if (sizeof(requests[msgId].responses) >= quorum(sizeof(nodes)))
       {
-        value = findAcceptedValue(requests[msgId].responses);
-        if (value == -1)
+        value = findaccepted_value(requests[msgId].responses);
+        if (value == 0)
         {
           value = requests[msgId].value;
         }
 
         requests -= (msgId);
         
-        requests += ((ACCEPT, req.proposalNumber), (value=-1, responses=emptySet));
+        requests += ((ACCEPT, req.proposal_number), (value=-1, responses=emptySet));
 
-        broadcast(this, nodes, eAccept, (node=this,requestId=req.requestId, nodeId=id, proposalNumber=req.proposalNumber,value=value));
+        broadcast(this, nodes, eAccept, (node=this,request_id=req.request_id, node_id=id, proposal_number=req.proposal_number,value=value));
       }
     }
 
     on eAccept do (req: acceptReq) {
-      if (req.proposalNumber >= minProposalNumber)
-      {
-        acceptedValue = req.value;
-        acceptedProposalNumber = req.proposalNumber;
-        minProposalNumber = req.proposalNumber;
+      assert req.request_id.node_id > 0;
+      assert req.request_id.request_number > 0;
+      assert req.node_id > 0;
+      assert req.proposal_number > 0;
+      assert req.value > 0;
 
-        send req.node, eAcceptResp, (requestId=req.requestId, nodeId=id, minProposalNumber=minProposalNumber);
-        announce eValueAccepted, (nodeId=id, value=req.value);
+      if (req.proposal_number >= min_proposal_number)
+      {
+        accepted_value = req.value;
+        accepted_proposal_number = req.proposal_number;
+        min_proposal_number = req.proposal_number;
+
+        send req.node, eAcceptResp, (request_id=req.request_id, node_id=id, min_proposal_number=min_proposal_number);
+        announce eValueAccepted, (node_id=id, value=req.value);
       }
     }
 
     on eAcceptResp do (req: acceptResp) {
       var msgId: (MessageType, int); 
 
-      msgId = (ACCEPT, req.minProposalNumber);
+      assert req.request_id.node_id > 0;
+      assert req.request_id.request_number > 0;
+      assert req.node_id > 0;
+      assert req.min_proposal_number > 0;
 
-      print format("debug: on eAcceptResp minProposalNumber={0} requests={1}", req.minProposalNumber, requests);
+      msgId = (ACCEPT, req.min_proposal_number);
+
       if (!(msgId in requests))
       {
         return;
       }
 
-      requests[msgId].responses += ((nodeId=req.nodeId,acceptedProposalNumber=-1, acceptedValue=-1));
+      requests[msgId].responses += ((node_id=req.node_id,accepted_proposal_number=-1, accepted_value=-1));
 
-      if (req.minProposalNumber ==  nextProposalNumber - 1 && sizeof(requests[msgId].responses) >= quorum(sizeof(nodes)))
+      if (req.min_proposal_number ==  next_proposal_number - 1 && sizeof(requests[msgId].responses) >= quorum(sizeof(nodes)))
       {
         // value chosen;
       }
@@ -171,29 +189,32 @@ machine Node {
   }
 }
 
-fun quorum(numNodes: int): int {
-  return numNodes / 2 + 1;
+fun quorum(num_nodes: int): int {
+  return num_nodes / 2 + 1;
 }
 
-fun findAcceptedValue(responses: set[(nodeId: int, acceptedProposalNumber:int, acceptedValue: int)]): int {
-  var maxProposalNumber: int;
-  var acceptedValue: int;
-  var response: (nodeId: int, acceptedProposalNumber:int, acceptedValue: int);
+fun findaccepted_value(responses: set[(node_id: int, accepted_proposal_number:int, accepted_value: int)]): int {
+  var maxproposal_number: int;
+  var accepted_value: int;
+  var response: (node_id: int, accepted_proposal_number:int, accepted_value: int);
 
-  acceptedValue = -1;
-  maxProposalNumber = -1;
+  accepted_value = 0;
+  maxproposal_number = 0;
 
   foreach (response in responses)
   {
-    if (response.acceptedProposalNumber > maxProposalNumber)
+    if (response.accepted_proposal_number > maxproposal_number)
     {
-      maxProposalNumber = response.acceptedProposalNumber;
-      acceptedValue = response.acceptedValue;
+      assert response.accepted_proposal_number > 0;
+      assert response.accepted_value > 0;
+
+      maxproposal_number = response.accepted_proposal_number;
+      accepted_value = response.accepted_value;
     }
   }
 
-  assert (acceptedValue == -1 || acceptedValue > 0), format("unexpected acceptedValue: {0}", acceptedValue);
-  return acceptedValue;
+  assert (accepted_value == 0 || accepted_value > 0), format("unexpected accepted_value: {0}", accepted_value);
+  return accepted_value;
 }
 
 fun broadcast(sender: Node, nodes: seq[Node], e: event, msg: any) {
