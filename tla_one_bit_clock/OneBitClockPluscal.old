@@ -1,0 +1,40 @@
+---- MODULE OneBitClockPluscal ----
+EXTENDS TLC
+
+(*--algorithm OneBitClockPluscal
+variable b \in {0, 1};
+begin
+while TRUE do
+    if b = 0 then
+        b := 1;
+    else 
+        b := 0;
+    end if;
+end while;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "f4f18776" /\ chksum(tla) = "5ae62d6a")
+VARIABLES b, pc
+
+vars == << b, pc >>
+
+Init == (* Global variables *)
+        /\ b \in {0, 1}
+        /\ pc = "Lbl_1"
+
+Lbl_1 == /\ pc = "Lbl_1"
+         /\ TRUE
+         /\ pc' = "Done"
+         /\ b' = b
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
+Next == Lbl_1
+           \/ Terminating
+
+Spec == Init /\ [][Next]_vars
+
+Termination == <>(pc = "Done")
+
+\* END TRANSLATION 
+====
