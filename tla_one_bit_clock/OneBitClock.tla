@@ -12,4 +12,8 @@ Next1 ==
     \/ 
         /\ b = 1
         /\ b' = 0
+
+Next2 == b' = IF b = 0 THEN 1 ELSE 0
+
+TypeOk == b \in {0, 1}
 ====
