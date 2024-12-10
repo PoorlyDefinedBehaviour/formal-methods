@@ -1,0 +1,25 @@
+strict digraph DiskGraph {
+edge [colorscheme="paired12"]
+nodesep=0.35;
+subgraph cluster_graph {
+color="white";
+-4759161433243538263 [label="status = \"start\"",style = filled]
+-4759161433243538263 -> 5234588372115250857 [label="",color="2",fontcolor="2"];
+5234588372115250857 [label="status = \"done\""];
+-4759161433243538263 -> -7063263618062659545 [label="",color="2",fontcolor="2"];
+-7063263618062659545 [label="status = \"fail\""];
+-4759161433243538263 -> -4759161433243538263 [label="",color="3",fontcolor="3"];
+-4759161433243538263 -> -4759161433243538263 [style="dashed"];
+5234588372115250857 -> 5234588372115250857 [label="",color="3",fontcolor="3"];
+5234588372115250857 -> 5234588372115250857 [style="dashed"];
+-7063263618062659545 -> -4759161433243538263 [label="",color="2",fontcolor="2"];
+-7063263618062659545 -> -7063263618062659545 [label="",color="3",fontcolor="3"];
+-7063263618062659545 -> -7063263618062659545 [style="dashed"];
+{rank = same; -4759161433243538263;}
+{rank = same; -7063263618062659545;5234588372115250857;}
+}
+subgraph cluster_legend {graph[style=bold];label = "Next State Actions" style="solid"
+node [ labeljust="l",colorscheme="paired12",style=filled,shape=record ]
+ChangeStatus [label="ChangeStatus",fillcolor=2]
+Next [label="Next",fillcolor=3]
+}}
