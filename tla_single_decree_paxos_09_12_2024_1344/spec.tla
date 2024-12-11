@@ -41,12 +41,15 @@ Send(to_node, message) ==
     
 Prepare(from_node, proposal_number) == [type |-> "prepare", from_node |-> from_node, proposal_number |-> proposal_number]
 
+IsPrepare(message) == message.type = "prepare"
+
 Accept(from_node, proposal_number, value) == [type |-> "accept", from_node |-> from_node, proposal_number |-> proposal_number, value |-> value]
+
+IsAccept(message) == message.type = "accept"
 
 InflightRequest(message_type, proposal_number) == [type |-> message_type, proposal_number |-> proposal_number, responses |-> {}]
 
 SendPrepare(node) ==
-    PrintT(<<"SendPrepare node", node>>) /\
     LET 
         state == State[node]
         proposal_number == state.n + 1
@@ -58,22 +61,27 @@ SendPrepare(node) ==
                                   ![node]["inflight_requests"] = state.inflight_requests \union {InflightRequest("prepare", proposal_number)}]
 
 HandlePrepareResponse(node, message) ==
+    PrintT("HandlePrepareResponse called") /\
+    Assert(IsPrepareResponse(r), "HandlePrepareResponse received a message of the wrong type") /\
     LET state == State[node] IN 
-    \* PrintT(<<"HandlePrepareResponse state", state>>) /\
-    
-    PrintT(<<"H Prep Res, cardinality", {r \in state.inflight_requests: r.proposal_number = message.proposal_number /\ r.type = "prepare"}>>)
-    /\ 
-    IF \E r \in state.inflight_requests: r.proposal_number = message.proposal_number /\ r.type = "prepare" THEN
+    Assert(
+      Cardinality({r \in state.inflight_requests: r.proposal_number = message.proposal_number /\ IsPrepare(r)}) <= 1, 
+      "HandlePrepareResponse: There's more than one inflight prepare request with the same proposal number"
+    ) /\
+    PrintT(<<"SendPrepareResponse: got message", message>>) /\
+    IF \E r \in state.inflight_requests: r.proposal_number = message.proposal_number /\ IsPrepare(r) THEN
         LET 
-            request == CHOOSE request \in state.inflight_requests: request.proposal_number = message.proposal_number
+            request == CHOOSE r \in state.inflight_requests: r.proposal_number = message.proposal_number /\ IsPrepare(r)
             updated_request == [request EXCEPT !["responses"] = request.responses \union {message}] 
             updated_inflight_requests_1 == state.inflight_requests \ {request}
-            updated_inflight_requests_2 == state.inflight_requests \union {updated_request}
+            updated_inflight_requests_2 == updated_inflight_requests_1 \union {updated_request}
         IN
+            /\ PrintT(<<"updated_inflight_requests_2", updated_inflight_requests_2>>) 
             \* Remove the old request, add an updated request with the new message in the responses set.
             /\ State' = [State EXCEPT ![node]["inflight_requests"] = updated_inflight_requests_2]
             /\ UNCHANGED <<Messages, Done>>
-            \* /\ Cardinality(updated_request.responses) >= MinQuorumSize 
+            /\ Cardinality(updated_request.responses) >= MinQuorumSize 
+            /\ PrintT("SendPrepareResponse: got quorum")
             \* /\ \E n \in Nodes:
             \*     /\ PrintT(<<"HandlePrepareResponse sending Accept()">>)
             \*     /\ Send(n, Accept(node, updated_request.proposal_number, updated_request.value))
@@ -84,10 +92,12 @@ HandlePrepareResponse(node, message) ==
 
 OkPrepareResponse(from_node, proposal_number) == [type |-> "prepare_response", from_node |-> from_node, proposal_number |-> proposal_number]
 
+IsPrepareResponse(message) == message.type = "prepare_response"
+
 HandlePrepare(node, message) ==
+    Assert(IsPrepare(message), "HandlePrepare received a message of the wrong type") /\
     LET state == State[node] IN 
     IF message.proposal_number > state.min_proposal_number THEN
-        /\ PrintT(<<"HandlePrepare: sending PrepareOk, node", node, "proposal_number", message.proposal_number>>)
         /\ State' = [State EXCEPT ![node]["min_proposal_number"] = message.proposal_number]
         /\ Send(message.from_node, OkPrepareResponse(node, message.proposal_number))
         /\ UNCHANGED Done
@@ -96,9 +106,14 @@ HandlePrepare(node, message) ==
 
 OkAcceptResponse(node) == [type |-> "accept_response", node |-> node]
 
-HandleAcceptResponse(node, message) == TRUE
+IsAcceptResponse(message) == message.type = "accept_response"
+
+HandleAcceptResponse(node, message) == 
+  Assert(IsAcceptResponse(message), "HandleAcceptResponse received a message of the wrong type") /\
+  TRUE
 
 HandleAccept(node, message) ==
+    Assert(message.type = "accept", "HandleAccept received a message of the wrong type") /\
     LET state == State[node] IN 
     IF message.proposal_number >= state.min_proposal_number THEN 
         /\ State' = [State EXCEPT ![node]["min_proposal_number"] = message.proposal_number,
@@ -130,8 +145,12 @@ ProcessMessage ==
                 UNCHANGED vars
 
 Next == 
-    \/ StartProposal
-    \/ ProcessMessage
+    /\ SendPrepare("a")
+    /\ HandlePrepareResponse("a", OkPrepareResponse("b", 1))
+    /\ HandlePrepareResponse("a", OkPrepareResponse("c", 1))
+    
+    \* \/ StartProposal
+    \* \/ ProcessMessage
 
 Spec == Init /\ [][Next]_vars /\ WF_vars(StartProposal) /\ WF_vars(ProcessMessage)
 ====
