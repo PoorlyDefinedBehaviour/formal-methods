@@ -26,7 +26,7 @@ ValidServerStateValues ==
         state: {
             "waiting",
             "started_write",
-            "wrote_metadata",
+            "wrote_blob",
             "started_read",
             "read_metadata"
         },
@@ -79,23 +79,23 @@ StartWrite(s) ==
             ])
     /\ UNCHANGED <<database_state, blob_store_state>>
 
-WriteMetadata(s) ==
+WriteBlob(s) ==
     LET current_state == server_state[s] IN 
     /\ current_state.state = "started_write"
-    /\ database_state' = [database_state EXCEPT ![current_state.user_id] = current_state.metadata]
-    /\ server_state' = [server_state EXCEPT ![s].state = "wrote_metadata"]
-    /\ UNCHANGED  <<blob_store_state, operations>>
-
-WriteBlobAndReturn(s) == 
-    LET current_state == server_state[s] IN
-    /\ current_state.state = "wrote_metadata"
     /\ blob_store_state' = [blob_store_state EXCEPT ![current_state.user_id] = current_state.image]
-    /\ server_state' = [server_state EXCEPT  ![s].state = "waiting"]
+    /\ server_state' = [server_state EXCEPT ![s].state = "wrote_blob"]
     /\ UNCHANGED  <<database_state, operations>>
+
+WriteMetadataAndReturn(s) ==
+    LET current_state == server_state[s] IN 
+    /\ current_state.state = "wrote_blob"
+    /\ database_state' = [database_state EXCEPT ![current_state.user_id] = current_state.metadata]
+    /\ server_state' = [server_state EXCEPT ![s].state = "waiting"]
+    /\ UNCHANGED  <<blob_store_state, operations>>
 
 FailWrite(s) ==
     \* Server can only fail when writing.
-    /\ server_state[s].state \in {"started_write", "wrote_metadata"}
+    /\ server_state[s].state \in {"started_write", "wrote_blob"}
     /\ server_state' = [server_state EXCEPT 
         ![s].state = "waiting",
         ![s].user_id = "UNSET",
@@ -114,10 +114,24 @@ StartRead(s) ==
 ReadMetadata(s) ==
     LET current_state == server_state[s] IN
     /\ current_state.state = "started_read"
+    /\ database_state[current_state.user_id] /= "UNSET"
     /\ server_state' = [server_state EXCEPT 
         ![s].state = "read_metadata",
         ![s].metadata = database_state[current_state.user_id]]
     /\ UNCHANGED <<database_state, blob_store_state, operations>>
+
+ReadMetadataAndReturnEmpty(s) ==
+    LET current_state == server_state[s] IN 
+    /\ current_state.state = "started_read"
+    /\ database_state[current_state.user_id] = "UNSET"
+    /\ server_state' = [server_state EXCEPT ![s].state = "waiting"]
+    /\ operations' = Append(operations, [
+            type |-> "READ",
+            user_id |-> current_state.user_id,
+            metadata |-> "UNSET",
+            image |-> "UNSET"
+        ])
+    /\ UNCHANGED <<database_state, blob_store_state>>
 
 ReadBlobAndReturn(s) ==
     LET current_state == server_state[s] IN 
@@ -137,11 +151,12 @@ Next ==
     \* For every step, pick a server and have it advance one state
     \E s \in SERVERS:
         \/ StartWrite(s)
-        \/ WriteMetadata(s)
-        \/ WriteBlobAndReturn(s)
+        \/ WriteBlob(s)
+        \/ WriteMetadataAndReturn(s)
         \/ FailWrite(s)
         \/ StartRead(s)
         \/ ReadMetadata(s)
+        \/ ReadMetadataAndReturnEmpty(s)
         \/ ReadBlobAndReturn(s)
 
 Spec == Init /\ [][Next]_vars
@@ -165,6 +180,6 @@ ConsistentReads ==
               \/ \* Ignore unset reads
                   /\ read_op.metadata = "UNSET"
                   /\ read_op.image = "UNSET"
-                  
+
 StopAfterNOperations == Len(operations) <= 5
 ====
