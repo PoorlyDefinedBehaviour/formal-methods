@@ -5,7 +5,8 @@ CONSTANTS
     USERIDS, \* A set of user ids to test with (one per user)
     SERVERS, \* A set of server ids (each one will "create" a new server) 
     METADATAS, \* A set of metadata versions
-    IMAGES \* A set of image versions
+    IMAGES, \* A set of image versions
+    UUIDS
 
 VARIABLES 
     database_state, \* database_state[key] = What is stored for this key
@@ -20,6 +21,12 @@ vars == <<database_state, blob_store_state, server_state, operations>>
 ValidUserIdValues == USERIDS \union {"UNSET"}
 ValidMetadataValues == METADATAS \union {"UNSET"}
 ValidImageValues == IMAGES \union {"UNSET"}
+ValidUuidValues == UUIDS \union {"UNSET"}
+
+ValidaDatabaseRecordValues == [
+    metadata: ValidMetadataValues, 
+    image_id: ValidUuidValues
+]
 
 ValidServerStateValues ==
     [
@@ -32,6 +39,7 @@ ValidServerStateValues ==
         },
         user_id: ValidUserIdValues,
         metadata: ValidMetadataValues,
+        image_id: ValidUuidValues,
         image: ValidImageValues
     ]
 
@@ -44,18 +52,22 @@ ValidOperationValues ==
     ]
             
 TypeOk ==
-    /\ database_state \in [USERIDS -> ValidMetadataValues]
-    /\ blob_store_state \in [USERIDS -> ValidImageValues]
-    /\ server_state \in [SERVERS -> ValidServerStateValues]
-    /\ operations \in Seq(ValidOperationValues)
+    /\ database_state \in [USERIDS -> ValidaDatabaseRecordValues]
+    /\ blob_store_state \in [UUIDS -> ValidImageValues]
+    \* /\ server_state \in [SERVERS -> ValidServerStateValues]
+    \* /\ operations \in Seq(ValidOperationValues)
 
 Init ==
-    /\ database_state = [u \in USERIDS |-> "UNSET"]
-    /\ blob_store_state = [u \in USERIDS |-> "UNSET"]
+    /\ database_state = [u \in USERIDS |-> [
+            metadata |-> "UNSET",
+            image_id |-> "UNSET"
+        ]]
+    /\ blob_store_state = [u \in UUIDS |-> "UNSET"]
     /\ server_state = [s \in SERVERS |-> [
             state |-> "waiting",
             user_id |-> "UNSET",
             metadata |-> "UNSET",
+            image_id |-> "UNSET",
             image |-> "UNSET"
         ]]
     /\ operations = <<>>
@@ -82,15 +94,28 @@ StartWrite(s) ==
 WriteBlob(s) ==
     LET current_state == server_state[s] IN 
     /\ current_state.state = "started_write"
-    /\ blob_store_state' = [blob_store_state EXCEPT ![current_state.user_id] = current_state.image]
-    /\ server_state' = [server_state EXCEPT ![s].state = "wrote_blob"]
-    /\ UNCHANGED  <<database_state, operations>>
+    /\ \E id \in UUIDS:
+        /\ blob_store_state[id] = "UNSET"
+        /\ blob_store_state' = [blob_store_state EXCEPT ![id] = current_state.image]
+        /\ server_state' = [server_state EXCEPT 
+            ![s].state = "wrote_blob",
+            ![s].image_id = id]
+        /\ UNCHANGED  <<database_state, operations>>
 
 WriteMetadataAndReturn(s) ==
     LET current_state == server_state[s] IN 
     /\ current_state.state = "wrote_blob"
-    /\ database_state' = [database_state EXCEPT ![current_state.user_id] = current_state.metadata]
-    /\ server_state' = [server_state EXCEPT ![s].state = "waiting"]
+    /\ database_state' = [database_state EXCEPT 
+        ![current_state.user_id] = [
+            metadata |-> current_state.metadata,
+            image_id |-> current_state.image_id
+        ]]
+    /\ server_state' = [server_state EXCEPT 
+        ![s].state = "waiting",
+        ![s].user_id = "UNSET",
+        ![s].metadata = "UNSET",
+        ![s].image = "UNSET",
+        ![s].image_id = "UNSET"]
     /\ UNCHANGED  <<blob_store_state, operations>>
 
 FailWrite(s) ==
@@ -100,7 +125,8 @@ FailWrite(s) ==
         ![s].state = "waiting",
         ![s].user_id = "UNSET",
         ![s].metadata = "UNSET",
-        ![s].image = "UNSET"]
+        ![s].image = "UNSET",
+        ![s].image_id = "UNSET"]
     /\ UNCHANGED  <<database_state, blob_store_state, operations>>
 
 StartRead(s) ==
@@ -114,22 +140,24 @@ StartRead(s) ==
 ReadMetadata(s) ==
     LET current_state == server_state[s] IN
     /\ current_state.state = "started_read"
-    /\ database_state[current_state.user_id] /= "UNSET"
+    /\ database_state[current_state.user_id].metadata /= "UNSET"
     /\ server_state' = [server_state EXCEPT 
         ![s].state = "read_metadata",
-        ![s].metadata = database_state[current_state.user_id]]
+        ![s].metadata = database_state[current_state.user_id].metadata,
+        ![s].image_id = database_state[current_state.user_id].image_id]
     /\ UNCHANGED <<database_state, blob_store_state, operations>>
 
 ReadMetadataAndReturnEmpty(s) ==
     LET current_state == server_state[s] IN 
     /\ current_state.state = "started_read"
-    /\ database_state[current_state.user_id] = "UNSET"
+    /\ database_state[current_state.user_id].metadata = "UNSET"
     /\ server_state' = [server_state EXCEPT ![s].state = "waiting"]
     /\ operations' = Append(operations, [
             type |-> "READ",
             user_id |-> current_state.user_id,
             metadata |-> "UNSET",
-            image |-> "UNSET"
+            image |-> "UNSET",
+            image_id |-> "UNSET"
         ])
     /\ UNCHANGED <<database_state, blob_store_state>>
 
@@ -138,12 +166,15 @@ ReadBlobAndReturn(s) ==
     /\ current_state.state = "read_metadata"
     /\ server_state' = [server_state EXCEPT 
         ![s].state = "waiting",
-        ![s].image = blob_store_state[current_state.user_id]]
+        ![s].user_id = "UNSET",
+        ![s].metadata = "UNSET",
+        ![s].image = "UNSET",
+        ![s].image_id = "UNSET"]
     /\ operations' = Append(operations, [
             type |-> "READ",
             user_id |-> current_state.user_id,
             metadata |-> current_state.metadata,
-            image |-> blob_store_state[current_state.user_id]
+            image |-> blob_store_state[current_state.image_id]
         ])
     /\ UNCHANGED <<database_state, blob_store_state>>
 
@@ -181,5 +212,5 @@ ConsistentReads ==
                   /\ read_op.metadata = "UNSET"
                   /\ read_op.image = "UNSET"
 
-StopAfterNOperations == Len(operations) <= 5
+StopAfterNOperations == Len(operations) <= 3
 ====

@@ -3,3 +3,4 @@
 states/
 PGenerated/
 PCheckerOutput/
+*.do.dot
