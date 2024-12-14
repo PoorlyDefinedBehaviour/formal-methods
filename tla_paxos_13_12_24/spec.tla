@@ -46,7 +46,7 @@ Init ==
 ProposalWithGreatestProposalId(props) ==
     CHOOSE p1 \in props: 
         \A p2 \in props:
-            p1.proposal_number >= p2.proposal_number
+            p1.accepted_proposal_number >= p2.accepted_proposal_number
 
 NewProposal(node, proposal_number, value) == [
     node |-> node,
@@ -216,8 +216,8 @@ ChosenValueNeverChangesAfterMajorityAccepts ==
                 \*  The oldest  proposal is the proposal with the smallest proposal number
                proposals[p1].proposal_number <= proposals[p2].proposal_number
        IN
-            \* All proposals accepted by a majority
-        /\ \A p \in ProposalsAcceptedByMajority:
+        \* All proposals accepted by a majority
+        \A p \in ProposalsAcceptedByMajority:
             \* Must have accepted the same value
             /\ proposals[oldest_proposal].value_sent_in_accept = proposals[p].value_sent_in_accept
 ====
