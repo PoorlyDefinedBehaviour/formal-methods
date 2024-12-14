@@ -30,7 +30,6 @@ TypeOk ==
     \A msg \in messages: IsMessageValid(msg)
 
 Init ==
-    /\ PrintT(<<"MinQuorumSize", MinQuorumSize>>)
     /\ messages = {}
     /\ node_state = [n \in Nodes |-> [
             \* Values stored in durable storage
@@ -41,7 +40,8 @@ Init ==
             accepted_proposal_number |-> 0,
             accepted_value |-> ""
         ]]
-    /\ proposals = [n \in 1..MaxProposals |-> NULL]
+      \* Map from node, proposal_number -> proposal state
+    /\ proposals = [n \in Nodes, p \in 1..MaxProposals |-> NULL]
 
 ProposalWithGreatestProposalId(props) ==
     CHOOSE p1 \in props: 
@@ -51,7 +51,10 @@ ProposalWithGreatestProposalId(props) ==
 NewProposal(node, proposal_number, value) == [
     node |-> node,
     proposal_number |-> proposal_number,
+    \* The value the proposer wants nodes to accept
     value |-> value,
+    \* Note that this value may be overwritten before the proposer sends the accept messages
+    value_sent_in_accept |-> value,
     prepare_responses |-> {},
     accept_responses |-> {}
 ]
@@ -109,7 +112,7 @@ SendPrepares(from_node) ==
         proposal_number == state.next_proposal_number 
         value == ToString(from_node) \o "-" \o ToString(proposal_number) IN
         /\ Broadcast({Prepare(from_node, to, proposal_number): to \in Nodes})
-        /\ proposals' = [proposals EXCEPT ![proposal_number] = NewProposal(from_node, proposal_number, value)]
+        /\ proposals' = [proposals EXCEPT ![<<from_node, proposal_number>>] = NewProposal(from_node, proposal_number, value)]
         /\ node_state' = [node_state EXCEPT ![from_node]["next_proposal_number"] = proposal_number + 1]
 
 HandlePrepare(node) ==
@@ -131,18 +134,21 @@ HandlePrepareResponse(node) ==
         /\ msg.to = node
         /\ IsPrepareResponse(msg)
         /\ LET 
-            proposal == proposals[msg.proposal_number]
+            proposal == proposals[<<node, msg.proposal_number>>]
             responses == proposal.prepare_responses \union {msg} 
-            responses_with_accepted_proposals == {r \in responses: r.accepted_proposal_number /= 0} IN
-            /\ proposals' = [proposals EXCEPT ![msg.proposal_number]["prepare_responses"] = responses]
-            /\ \/ 
-                 /\ Cardinality(responses) >= MinQuorumSize
-                 /\ LET value == IF Cardinality(responses_with_accepted_proposals) > 0 THEN
+            responses_with_accepted_proposals == {r \in responses: r.accepted_proposal_number /= 0}
+            value == IF Cardinality(responses_with_accepted_proposals) > 0 THEN
                         ProposalWithGreatestProposalId(responses_with_accepted_proposals).accepted_value
                     ELSE 
                         proposal.value
                     IN
-                        SendAccepts(node, proposal.proposal_number, value)
+            /\ proposals' = [proposals EXCEPT 
+                ![<<node, msg.proposal_number>>]["prepare_responses"] = responses,
+                ![<<node, msg.proposal_number>>]["value_sent_in_accept"] = value
+                ]
+            /\ 
+               \/ /\ Cardinality(responses) >= MinQuorumSize
+                  /\  SendAccepts(node, proposal.proposal_number, value)
                \/ UNCHANGED <<messages, node_state>>
     /\ UNCHANGED <<node_state>>
 
@@ -163,7 +169,7 @@ HandleAcceptResponse(node) ==
     /\ \E msg \in messages:
         /\ msg.to = node
         /\ IsAcceptResponse(msg)
-        /\ proposals' = [proposals EXCEPT ![msg.proposal_number]["accept_responses"] = @ \union {msg}]
+        /\ proposals' = [proposals EXCEPT ![<<node, msg.proposal_number>>]["accept_responses"] = @ \union {msg}]
         /\ UNCHANGED <<node_state, messages>>
 
 Next == 
@@ -180,26 +186,38 @@ Next ==
 
 Spec == Init /\ [][Next]_vars /\ WF_vars(Next)
 
+ProposalsAcceptedByMajority ==
+    {
+        p \in DOMAIN proposals: 
+            \* That proposal exists
+            /\ proposals[p] /= NULL 
+            \* And a majority of replicas decided to accept it
+            /\ Cardinality({
+                \* Keep only the messages that
+                m \in messages: 
+                    \* The message contains the same proposal number
+                    /\ m.proposal_number = proposals[p].proposal_number 
+                    \* And the message is a response to an accept sent by the node in the proposal
+                    /\ proposals[p].node = m.to
+                    \* And the message is a response to an accept message
+                    /\ IsAcceptResponse(m)}) >= MinQuorumSize
+    }
+
 NoProposalsAcceptedYet ==
     \* There does not exist a proposal that was accepted by a majority
-    ~\E p \in DOMAIN proposals:
-        proposals[p] /= NULL /\ Cardinality(proposals[p].accept_responses) >= MinQuorumSize
+    Cardinality(ProposalsAcceptedByMajority) = 0
 
 ChosenValueNeverChangesAfterMajorityAccepts ==
     \/ NoProposalsAcceptedYet
     \/ LET  
-           proposals_accepted_by_majority == {p \in DOMAIN proposals: proposals[p] /= NULL /\ Cardinality(proposals[p].accept_responses) >= MinQuorumSize}
            \* All future accepted proposals should have accepted the same value as the the oldest accepted proposal
-           oldest_proposal == CHOOSE p1 \in proposals_accepted_by_majority: 
-             \A p2 \in proposals_accepted_by_majority:
+           oldest_proposal == CHOOSE p1 \in ProposalsAcceptedByMajority: 
+             \A p2 \in ProposalsAcceptedByMajority:
+                \*  The oldest  proposal is the proposal with the smallest proposal number
                proposals[p1].proposal_number <= proposals[p2].proposal_number
        IN
-        \A p \in proposals_accepted_by_majority:
-            LET responses == proposals[p].accept_responses IN 
-            PrintT(<<"proposals: ", {
-                r.from: r \in responses
-            }>>)
-            /\
-            proposals[oldest_proposal].value = proposals[p].value
-    
+            \* All proposals accepted by a majority
+        /\ \A p \in ProposalsAcceptedByMajority:
+            \* Must have accepted the same value
+            /\ proposals[oldest_proposal].value_sent_in_accept = proposals[p].value_sent_in_accept
 ====
