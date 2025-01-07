@@ -1,0 +1,81 @@
+---- MODULE spec ----
+EXTENDS TLC, Integers, Sequences, FiniteSets
+
+\* https://www.hillelwayne.com/post/tla-messages/
+
+CONSTANTS Writer, Readers, Data, NULL, MaxQueue
+
+ASSUME Writer \notin Readers
+ASSUME NULL \notin Data
+
+SeqOf(set, n) == UNION {[1..m -> set]: m \in 0..n}
+
+(*--algorithm spec
+variables 
+    \* Ordered messages
+    queue = <<>>;
+
+define
+    MaxQueueLen == Len(queue) < MaxQueue
+    
+    TypeInvariant ==
+        queue \in SeqOf(Data, MaxQueue)
+end define;
+
+process writer = Writer
+variable d \in Data
+begin
+Write:
+    while TRUE do
+        queue := Append(queue, d);
+    end while;
+end process;
+
+process reader \in Readers
+variables local = NULL;
+begin
+Read:
+    while TRUE do
+        await queue /= <<>>;
+        local := Head(queue);
+        queue := Tail(queue);
+    end while;
+end process;
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "786e29f9" /\ chksum(tla) = "e1498640")
+VARIABLE queue
+
+(* define statement *)
+MaxQueueLen == Len(queue) < MaxQueue
+
+TypeInvariant ==
+    queue \in SeqOf(Data, MaxQueue)
+
+VARIABLES d, local
+
+vars == << queue, d, local >>
+
+ProcSet == {Writer} \cup (Readers)
+
+Init == (* Global variables *)
+        /\ queue = <<>>
+        (* Process writer *)
+        /\ d \in Data
+        (* Process reader *)
+        /\ local = [self \in Readers |-> NULL]
+
+writer == /\ queue' = Append(queue, d)
+          /\ UNCHANGED << d, local >>
+
+reader(self) == /\ queue /= <<>>
+                /\ local' = [local EXCEPT ![self] = Head(queue)]
+                /\ queue' = Tail(queue)
+                /\ d' = d
+
+Next == writer
+           \/ (\E self \in Readers: reader(self))
+
+Spec == Init /\ [][Next]_vars
+
+\* END TRANSLATION 
+====
