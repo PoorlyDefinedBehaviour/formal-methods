@@ -1,0 +1,48 @@
+---- MODULE pluscal ----
+EXTENDS TLC, Integers
+CONSTANT UPDATING
+
+(* --algorithm deploy
+variables
+  servers = {"s1", "s2", "s3"},
+  load_balancer = servers,
+  update_flag = [s \in servers |-> FALSE],
+  updated = [s \in servers |-> FALSE];
+
+define
+  SameVersion ==
+    \A x, y \in load_balancer:
+      updated[x] = updated[y]
+
+  ZeroDowntime ==
+    \E server \in load_balancer:
+      updated[server] /= UPDATING
+end define
+
+fair process update_server \in servers
+begin
+  Update:
+    await update_flag[self];
+    updated[self] := UPDATING;
+  FinishUpdate:
+    updated[self] := TRUE;
+end process;
+
+fair process start_update = "start_update"
+  begin
+   StartUpdate:
+     load_balancer := {"s1"};
+     update_flag := [s \in servers |->
+      IF s = "s1" THEN FALSE ELSE TRUE];
+   Transition:
+     await \A s \in (servers \ load_balancer):
+       updated[s] = TRUE;
+     load_balancer := servers \ load_balancer;
+     update_flag["s1"] := TRUE;
+   Finish:
+     await updated["s1"] = TRUE;
+     load_balancer := load_balancer \union {"s1"};
+end process;
+
+end algorithm; *)
+====
