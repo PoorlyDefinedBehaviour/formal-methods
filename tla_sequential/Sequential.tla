@@ -1,13 +1,7 @@
----- MODULE spec ----
+---- MODULE Sequential ----
 EXTENDS TLC, Naturals, Sequences, FiniteSets
 
-VARIABLES pc, x
-
-vars == <<pc, x>>
-
-Init ==
-    /\ pc = [v \in {} |-> 1]
-    /\ x = <<>>
+VARIABLES pc
 
 ToSequentialID(i, id) ==
     IF id \in STRING THEN 
@@ -116,31 +110,4 @@ Sequential7(id, f1_id, f1(_), f2_id, f2(_), f3_id, f3(_), f4_id, f4(_), f5_id, f
               \/ pc[id] = seq_f5_id /\ f5(5) /\ pc' = [pc EXCEPT ![id] = seq_f6_id]
               \/ pc[id] = seq_f6_id /\ f6(6) /\ pc' = [pc EXCEPT ![id] = seq_f7_id]
               \/ pc[id] = seq_f7_id /\ f7(7) /\ pc' = [pc EXCEPT ![id] = "Done"]
-
-A ==
-    Sequential3(
-        "A",
-        "Step1", LAMBDA i: x' = Append(x, i),
-        "Step2", LAMBDA i: x' = Append(x, i),
-        "Step3", LAMBDA i: PrintT(<<"Step3", pc, "x", x>>) /\ UNCHANGED x
-    )
-    \* /\ Sequential5(
-    \*     "A", 
-    \*     "AppendToY", LAMBDA _i: PrintT("AppendToY1") /\ y' = Append(y, x) /\ UNCHANGED x,
-    \*     "IncX", LAMBDA _i: PrintT("IncX") /\ x' = x + 1 /\ UNCHANGED y,
-    \*     "Print", LAMBDA i: PrintT(<<"Print1", i, x, y, pc>>) /\ UNCHANGED vars,
-    \*     "AppendToY", LAMBDA _i: PrintT("AppendToY2") /\ y' = Append(y, x) /\ UNCHANGED x,
-    \*     "Print", LAMBDA i: PrintT(<<"Print2", i, x, y>>) /\ UNCHANGED vars 
-    \*     )
-
-Terminating ==
-    /\ \A id \in DOMAIN pc: pc[id] = "Done"
-    /\ UNCHANGED vars
-
-Next == 
-    \* TODO: test
-    \/ A
-    \/ Terminating
-
-Spec == Init /\ [][Next]_vars
 ====
