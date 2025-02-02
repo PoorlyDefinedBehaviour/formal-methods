@@ -84,7 +84,7 @@ Redis_Expire ==
     /\ UNCHANGED <<msgs, clients>>
 
 Redis_SetNX ==
-    \* There exists a node and a mesage
+    \* There exists a node and a message
     /\ \E n \in Nodes, m \in msgs:
         \* where the message is a set nx request
         /\ m.type = "set_nx"
