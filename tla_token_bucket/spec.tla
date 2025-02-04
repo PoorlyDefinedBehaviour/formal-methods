@@ -98,6 +98,7 @@ EventuallyEveryRequestIsServiced ==
 EnoughTokensAreAvailablewhenRequestIsServiced ==
     \A i \in DOMAIN events:
         /\ events[i].type = "request"
+        /\ events[i].cost <= events[i].bucket
 
 \****
 \* State constraints
