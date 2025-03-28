@@ -71,7 +71,6 @@ ReceiveClientRequest ==
         \* Drop message
         UNCHANGED <<msgs, clients, replicas>>
        ELSE IF msg.request_number = replicas[r].client_table[msg.client_id].request_number THEN 
-        \* TODO: Return cached response
         /\ Send([
             type |-> "reply",
             to |-> msg.client_id,
@@ -81,27 +80,30 @@ ReceiveClientRequest ==
             ])
         /\ UNCHANGED <<clients, replicas>>
        ELSE 
-        /\ LET key == ToString(replicas[r].view_number) \o ToString(replicas[r].op_number) IN
-            replicas' = [replicas EXCEPT ![r].op_number = @ + 1,
-                                         ![r].log = Append(@, msg.op),
-                                         ![r].client_table = [@ EXCEPT ![msg.client_id] = [
-                                            request_number |-> msg.request_number,
-                                            response |-> Null,
-                                            in_progress |-> TRUE
-                                           ]],
-                                         ![r].requests = [v \in {key} |-> [
-                                              client_id |-> msg.client_id,
-                                              request_number |-> msg.request_number
+        LET 
+            key == ToString(replicas[r].view_number) \o ToString(replicas[r].op_number)
+            op_number == replicas[r].op_number + 1 
+        IN
+          /\ replicas' = [replicas EXCEPT ![r].op_number = op_number,
+                                          ![r].log = Append(@, msg.op),
+                                          ![r].client_table = [@ EXCEPT ![msg.client_id] = [
+                                             request_number |-> msg.request_number,
+                                             response |-> Null,
+                                             in_progress |-> TRUE
+                                            ]],
+                                          ![r].requests = [v \in {key} |-> [
+                                               client_id |-> msg.client_id,
+                                               request_number |-> msg.request_number
                                             ]] @@ @]
-        /\ Broadcast({[
-            type |-> "prepare",
-            to |-> to,
-            view_number |-> replicas[r].view_number,
-            op |-> msg.op,
-            client_id |-> msg.client_id,
-            request_number |-> msg.request_number,
-            op_number |-> replicas[r].op_number,
-            commit_number |-> replicas[r].commit_number
+          /\ Broadcast({[
+              type |-> "prepare",
+              to |-> to,
+              view_number |-> replicas[r].view_number,
+              op |-> msg.op,
+              client_id |-> msg.client_id,
+              request_number |-> msg.request_number,
+              op_number |-> op_number,
+              commit_number |-> replicas[r].commit_number
               ]:  to \in Configuration \ {r}})
     /\ UNCHANGED <<clients>>
 
@@ -166,6 +168,36 @@ ReceivePrepare ==
             ])
     /\ UNCHANGED clients
 
+StartViewChange(r) ==
+  LET view_number == replicas[r].view_number + 1 IN
+    /\ replicas' = [replicas EXCEPT ![r].view_number = view_number,
+                                    ![r].status = StatusViewChange]
+    /\ Broadcast({[
+        type |-> "start_view_change",
+        from |-> r,
+        to |-> to,
+        view_number |-> view_number
+        ]: to \in Configuration \ {r}})
+
+OnViewChangeTimeout ==
+  \E r \in Configuration:
+    /\ ~IsPrimary(r)
+    /\ StartViewChange(r)
+
+OnStartViewChangeMessage ==
+  \E r \in Configuration, msg \in msgs:
+    /\ msg.type = "start_view_change"
+    /\ msg.to = r
+    /\ \/ /\ msg.view_number > replicas[r].view_number
+          /\ StartViewChange(r)
+       \/ 
+
+OnDoViewChangeMessage ==
+  \E r \in Configuration, msg \in msgs:
+    /\ msg.type = "start_view_change"
+    /\ msg.to = r
+    /\ StartViewChange(r)
+
 Replica ==
   \/ ReceiveClientRequest
   \/ ReceivePrepare
@@ -192,7 +224,7 @@ ClientSendRequest ==
 Next ==
   \/ Replica
   \/ ClientSendRequest
-  \/ TLCGet("level") >= 6 /\ Assert(FALSE, "")
+  \* \/ TLCGet("level") >= 6 /\ Assert(FALSE, "")
 
 Spec == Init /\ [][Next]_vars
 
