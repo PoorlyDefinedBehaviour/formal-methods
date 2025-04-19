@@ -279,53 +279,56 @@ ReplicaReceiveStartViewChangeFromQuorum ==
         to |-> Primary(replicas[r].view_number),
         view_number |-> replicas[r].view_number,
         log |-> replicas[r].log,
-        \* TODO
+        \* TODO: set last_normal_status_view_number to something
         last_normal_status_view_number |-> -1,
         op_number |-> replicas[r].op_number,
         commit_number |-> replicas[r].commit_number
       ])
-    /\ UNCHANGED clients
+    /\ UNCHANGED <<clients, replicas>>
 
 PrimaryReceiveDoViewChangeFromQuorum ==
   \E r \in Configuration:
     /\ replicas[r].status = StatusViewChange
-    /\ IsPrimary(replicas[r].view_number)
+    /\ IsPrimary(r)
     /\ LET do_view_change_messages == {msg \in msgs: 
                                         /\ msg.type = "do_view_change"
                                         \* TODO: should replicas[r].view_number be compared here?
                                         /\ msg.view_number = replicas[r].view_number
-                                        /\ msg.to = r}
-           msg_with_greatest_normal_view_number == PrintT(do_view_change_messages)/\ CHOOSE m1 \in do_view_change_messages: 
-                                                      \A m2 \in do_view_change_messages:
-                                                        \/ m1.last_normal_status_view_number >= m2.last_normal_status_view_number 
-                                                        \/ /\ m1.last_normal_status_view_number = m2.last_normal_status_view_number 
-                                                           /\ m1.op_number >= m2.op_number
-           msg_with_greatest_commit_number == CHOOSE m1 \in do_view_change_messages:
-                                                \A m2 \in do_view_change_messages:
-                                                    m1.commit_number >= m2.commit_number
-           greatest_commit_number == msg_with_greatest_commit_number.commit_number
-           log == msg_with_greatest_normal_view_number
-           greatest_op_number == IF Len(log) = 0 THEN 0 ELSE Last(log).op_number
-       IN
-      \*  /\ TODO: check quorum, including  message from self
-       /\ replicas' = [replicas EXCEPT ![r].view_number = -1,
+                                        /\ msg.to = r} IN
+        \* TODO: need to receive DoViewChange from self
+        /\ Cardinality(do_view_change_messages) >= F
+        /\ LET
+            msg_with_greatest_normal_view_number == CHOOSE m1 \in do_view_change_messages: 
+                                                          \A m2 \in do_view_change_messages:
+                                                            \/ m1.last_normal_status_view_number >= m2.last_normal_status_view_number 
+                                                            \/ /\ m1.last_normal_status_view_number = m2.last_normal_status_view_number 
+                                                               /\ m1.op_number >= m2.op_number
+            msg_with_greatest_commit_number == CHOOSE m1 \in do_view_change_messages:
+                                                    \A m2 \in do_view_change_messages:
+                                                        m1.commit_number >= m2.commit_number
+            greatest_commit_number == msg_with_greatest_commit_number.commit_number
+            log == msg_with_greatest_normal_view_number.log
+            greatest_op_number == IF Len(log) = 0 THEN 0 ELSE Last(log).op_number
+            IN
+            /\ replicas' = [replicas EXCEPT ![r].view_number = -1,
                                        ![r].log = log,
                                        ![r].op_number = greatest_op_number,
                                        ![r].commit_number = greatest_commit_number,
                                        ![r].status = StatusNormal]
-      \*  TODO: execute unexecuted committed entries
-       /\ Broadcast({[
-            type |-> "start_view",
-            log |-> log,
-            op_number |-> greatest_op_number,
-            commit_number |-> greatest_commit_number
-          ]: to \in Configuration \ {r}})
-       /\ UNCHANGED clients
+            \*  TODO: execute unexecuted committed entries
+            /\ Broadcast({[
+                    type |-> "start_view",
+                    log |-> log,
+                    op_number |-> greatest_op_number,
+                    commit_number |-> greatest_commit_number,
+                    view_number |-> replicas[r].view_number
+                ]: to \in Configuration \ {r}})
+        /\ UNCHANGED clients
 
 ReplicaReceiveStartView ==
   \E r \in Configuration, msg \in msgs:
-    /\ ~IsPrimary(r)
     /\ msg.type = "start_view"
+    /\ ~IsPrimary(r)
     \* TODO: update info in client table (what info?)
     \* TODO: send PrepareOk for non-committed entries in the log
     \* TODO: execute unexecuted operations that are known to be committed
@@ -333,7 +336,7 @@ ReplicaReceiveStartView ==
                                     ![r].op_number = IF Len(msg.log) = 0 THEN 0 ELSE Last(msg.log).op_number,
                                     ![r].view_number = msg.view_number,
                                     ![r].status = StatusNormal]
-    /\ UNCHANGED clients
+    /\ UNCHANGED <<clients, msgs>>
 
 Replica ==
   \/ PrimaryReceiveClientRequest
