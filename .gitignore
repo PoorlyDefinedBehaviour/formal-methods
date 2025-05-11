@@ -7,3 +7,4 @@ PCheckerOutput/
 *.liveness.dot
 **/*.dot
 .dot
+**/*.old
