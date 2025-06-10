@@ -32,16 +32,78 @@ type edge struct {
 
 type stateVisitor struct {
 	graph *graph
+	adj   map[int][]edge
 }
 
 func newStateVisitor(graph *graph) *stateVisitor {
-	return &stateVisitor{graph: graph}
+	adj := make(map[int][]edge, 0)
+
+	for _, edge := range graph.Edges {
+		// If it is a stuttering step, skip it
+		if edge.Tail == edge.Head {
+			continue
+		}
+
+		adj[edge.Tail] = append(adj[edge.Tail], edge)
+	}
+	return &stateVisitor{graph: graph, adj: adj}
 }
 
-func (visitor *stateVisitor) Next() iter.Seq[string] {
-	return func(yield func(string) bool) {
-
+func initialState(objects []object) map[string]string {
+	for _, object := range objects {
+		if object.Shape == "box" {
+			return parseLabel(object.Label)
+		}
 	}
+	panic(fmt.Sprintf("unable to find initial state: objects=%+v", objects))
+}
+
+type Action struct {
+	Name   string
+	Values map[string]string
+}
+
+func (visitor *stateVisitor) Next() (iter.Seq[Action], bool) {
+	initial := visitor.graph.Edges[0].Tail
+	if len(visitor.adj[initial]) == 0 {
+		return nil, false
+	}
+
+	return func(yield func(Action) bool) {
+		initialState := initialState(visitor.graph.Objects)
+
+		if !yield(Action{Name: "Init", Values: initialState}) {
+			return
+		}
+
+		current := visitor.adj[initial][0]
+
+		for {
+			if !yield(Action{Name: current.Label}) {
+				return
+			}
+
+			neighbors := visitor.adj[current.Head]
+			if len(neighbors) == 0 {
+				return
+			}
+			next := neighbors[0]
+
+			updatedNeighbors := swapRemove(visitor.adj[current.Tail], 0)
+			if len(updatedNeighbors) == 0 {
+				delete(visitor.adj, current.Tail)
+			} else {
+				visitor.adj[current.Tail] = updatedNeighbors
+			}
+
+			current = next
+		}
+	}, true
+}
+
+func swapRemove(xs []edge, i int) []edge {
+	xs[i] = xs[len(xs)-1]
+	return xs[:len(xs)-1]
 }
 
 func main() {
