@@ -88,7 +88,6 @@ ReceiveFunc(msg, received) ==
       [received EXCEPT ![msg] = @ + 1]
 
 CanReceive(r, msg_type, msg) ==
-    /\  msg \in msgs
     /\  msg.to = r
     /\  msg.payload.type = msg_type
     /\  \/  msg \notin DOMAIN recv
@@ -109,7 +108,7 @@ ReduceSet(Op(_,_), set, accum) ==
 
 ReceiveSet(r, msg_type, messages) ==
     /\  \A msg \in messages: CanReceive(r, msg_type, msg)
-    /\  recv' = ReduceSet(LAMBDA accum, msg: ReceiveFunc(accum, msg), messages, recv)
+    /\  recv' = ReduceSet(LAMBDA accum, msg: ReceiveFunc(msg, accum), messages, recv)
 
 DiscardFunc(msg, messages) ==
     messages
@@ -356,7 +355,7 @@ BackupReceiveNewState(r) ==
                                            ![r].op_number = msg.payload.op_number,
                                            ![r].commit_number = msg.payload.commit_number]
         /\  Discard(msg)
-    /\  UNCHANGED <<clients, fsm>>
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 BackupReceivePrepare(r) ==
     /\  IsBackup(r)
@@ -387,7 +386,7 @@ BackupReceiveCommit(r) ==
             replicas' = [replicas EXCEPT ![r].commit_number = @ + 1,
                                          ![r].client_table = [@ EXCEPT ![entry.client_id].result = result]]
         /\  Discard(msg)
-    /\ UNCHANGED <<fsm, clients>>
+    /\ UNCHANGED <<sent, fsm, clients>>
 
 BackupSendStartViewChange(r) ==
     /\  IsBackup(r)
@@ -414,9 +413,8 @@ BackupReceiveStartViewChange(r) ==
                 /\  replicas' = [replicas EXCEPT ![r].status = StatusViewChange,
                                                  ![r].view_number = v,
                                                  ![r].last_normal_status_view_number = v_prime]
-                /\  sent' = [sent EXCEPT !.replicas[r].start_view_change_count = @ + 1]
                 /\  DiscardAndBroadcast(msg, r, StartViewChange(v, i))
-    /\  UNCHANGED <<clients, fsm>>
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 BackupReceiveStartViewChangeFromMajority(r) ==
     /\  replicas[r].status = StatusViewChange
@@ -436,7 +434,6 @@ BackupReceiveStartViewChangeFromMajority(r) ==
         /\  DiscardSetAndSend(received, r, Primary(v), DoViewChange(v, l, v_prime, n, k, i))
     /\  UNCHANGED <<clients, fsm, replicas>>
 
-
 BackupReceiveDoViewChange(r) ==
     /\  replicas[r].status \in {StatusNormal, StatusViewChange}
     /\  \E msg \in msgs:
@@ -449,7 +446,7 @@ BackupReceiveDoViewChange(r) ==
                                                  ![r].view_number = v,
                                                  ![r].last_normal_status_view_number = v_prime]
                 /\  DiscardAndBroadcast(msg, r, StartViewChange(v, i))
-    /\  UNCHANGED <<clients, fsm>>
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 LongestLog(messages) ==
     LET msg == CHOOSE m1 \in messages: 
@@ -495,7 +492,7 @@ BackupReceiveDoViewChangeFromMajority(r) ==
                                              ![r].commit_number = k,
                                              ![r].status = StatusNormal]
             /\  Broadcast(r, StartView(v, l, n, k))
-    /\  UNCHANGED <<clients, fsm>>
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 \* TODO: After becoming primary -> primary must execute commited operations, update client table and send replies
 
@@ -511,11 +508,10 @@ BackupReceiveStartView(r) ==
                                              ![r].view_number = msg.payload.view_number,
                                              ![r].status = StatusNormal]
             /\  Discard(msg)
-    /\  UNCHANGED <<clients, fsm>>
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 CrashAndRestartReplica(r) ==
     Assert(FALSE, "TODO")
-    
 
 ClientSendRequest(client_id) ==
     /\  LET num_requests_sent == sent.clients[client_id].num_requests_sent
@@ -550,6 +546,7 @@ Next ==
             \/  BackupReceiveGetState(r)
             \/  BackupDoStateTransfer(r)
             \/  BackupReceiveNewState(r)
+            \/  ((\E x \in DOMAIN sent.replicas: sent.replicas[x].start_view_change_count > 1) => Assert(FALSE, "sent more than one svc")) /\ UNCHANGED vars
 
 Spec == Init /\ [][Next]_vars
 
