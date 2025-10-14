@@ -77,9 +77,10 @@ SendFunc(from, to, msg, messages) ==
     messages \union {m}
 
 Send(from, to, msg) ==
-    LET new_msgs == SendFunc(from, to, msg, msgs) IN 
-    /\  new_msgs /= msgs
-    /\  msgs' = new_msgs
+    /\  [from |-> from, to |-> to, payload |-> msg] \notin msgs
+    /\  LET new_msgs == SendFunc(from, to, msg, msgs) IN 
+        /\  new_msgs /= msgs
+        /\  msgs' = new_msgs
 
 ReceiveFunc(msg, received) ==
     IF msg \notin DOMAIN received THEN
@@ -109,39 +110,6 @@ ReduceSet(Op(_,_), set, accum) ==
 ReceiveSet(r, msg_type, messages) ==
     /\  \A msg \in messages: CanReceive(r, msg_type, msg)
     /\  recv' = ReduceSet(LAMBDA accum, msg: ReceiveFunc(msg, accum), messages, recv)
-
-DiscardFunc(msg, messages) ==
-    messages
-    \* LET count == messages[msg] - 1 IN
-    \* IF count = 0 THEN
-    \*   [m \in DOMAIN messages \ {msg} |-> messages[m]]
-    \* ELSE 
-    \*   [messages EXCEPT ![msg] = count]
-
-Discard(msg) ==
-    UNCHANGED msgs
-    \* /\  msgs[msg] > 0
-    \* /\  msgs' = DiscardFunc(msg, msgs)
-
-DiscardAndSend(old, from, to, new) ==
-    \* /\  msgs' = SendFunc(from, to, new, msgs)
-    /\  Send(from, to, new)
-    /\  UNCHANGED sent
-    \* /\  msgs[old] > 0
-    \* /\  msgs' = SendFunc(from, to, new, DiscardFunc(old, msgs))
-
-DiscardSetAndSend(old_set, from, to, new) ==
-    /\  Send(from, to, new)
-    /\  UNCHANGED sent
-    \* LET msgs1 == ReduceSet(LAMBDA messages, m: DiscardFunc(m, messages), old_set, msgs)
-    \*     msgs2 == SendFunc(from, to, new, msgs1) IN 
-    \* /\  msgs /= msgs2
-    \* /\  msgs' = msgs2
-
-DiscardAndBroadcast(old, from, new) ==
-    Broadcast(from, new)
-    \* /\  msgs[old] > 0
-    \* /\  msgs' = BroadcastFunc(from, new, DiscardFunc(old, msgs))
 
 Request(op, client_id, request_number) ==
     [
@@ -246,15 +214,14 @@ PrimaryReceiveRequest(r) ==
 
                 \* Drop request
                 \/  /\  request_number < replicas[r].client_table[client_id].request_number
-                    /\  Discard(msg)
-                    /\  UNCHANGED <<replicas>>
+                    /\  UNCHANGED <<msgs, replicas>>
 
                 \* Send cached result
                 \/  /\  request_number = replicas[r].client_table[client_id].request_number
                     /\  LET v == replicas[r].view_number
                             s == msg.payload.request_number
                             x == "TOOD: upcall fsm" IN
-                        /\  DiscardAndSend(msg, r, msg.payload.client_id, Reply(v, s, x))
+                        /\  Send(r, msg.payload.client_id, Reply(v, s, x))
                         /\  UNCHANGED <<replicas>>
 
                 \* Replicate request
@@ -267,7 +234,7 @@ PrimaryReceiveRequest(r) ==
                                                          ![r].log = Append(@, m),
                                                          ![r].client_table = [@ EXCEPT ![client_id].request_number = request_number,
                                                                                        ![client_id].result = NULL]]
-                        /\  DiscardAndBroadcast(msg, r, Prepare(v, m, n, k))
+                        /\  Broadcast(r, Prepare(v, m, n, k))
     /\ UNCHANGED <<sent, clients, fsm>>
 
 \* Primary receives PrepareOk from a majority after broadcasting Prepare requests.
@@ -287,11 +254,15 @@ PrimaryReceivePrepareOkFromMajority(r) ==
                 v == replicas[r].view_number
                 s == msg.payload.request_number
                 x == "TODO: upcall fsm" IN
-            /\  fsm' = [fsm EXCEPT ![r] = Append(@, client_op)]
+            \* /\  fsm' = [fsm EXCEPT ![r] = Append(@, client_op)]
             \* TODO: incrementing by 1 is probably wrong
             /\  replicas' = [replicas EXCEPT ![r].commit_number = @ + 1]
-            /\  DiscardSetAndSend(oks, r, msg.payload.client_id, Reply(v, s, x))
-    /\ UNCHANGED <<clients>>
+            /\  Send(r, msg.payload.client_id, Reply(v, s, x))
+    /\ UNCHANGED <<sent, clients>>
+
+PrimaryExecuteCommittedOperations(r) ==
+  \* TODO: After becoming primary -> primary must execute commited operations, update client table and send replies
+    /\  IsPrimary(r)
 
 \* Timeout fires and the primary broadcasts Commit messages.
 PrimarySendCommit(r) ==
@@ -314,8 +285,8 @@ BackupReceiveGetState(r) ==
                   l == SubSeq(replicas[r].log, min_op_number, Len(replicas[r].log))
                   n == replicas[r].op_number
                   k == replicas[r].commit_number IN
-              DiscardAndSend(msg, r, msg.payload.replica, NewState(v, l, n, k, min_op_number))
-    /\  UNCHANGED <<clients, fsm, replicas>>
+              Send(r, msg.payload.replica, NewState(v, l, n, k, min_op_number))
+    /\  UNCHANGED <<sent, clients, fsm, replicas>>
 
 BackupDoStateTransfer(r) ==
     /\  IsBackup(r)
@@ -333,7 +304,7 @@ BackupDoStateTransfer(r) ==
                           i == r IN 
                       /\  UNCHANGED replicas
                       \* Note: The paper says `one` of the other replicas instead of the primary.
-                      /\  DiscardAndSend(msg, r, Primary(replicas[r].view_number), GetState(v, n, i))
+                      /\  Send(r, Primary(replicas[r].view_number), GetState(v, n, i))
               \/  /\  msg.payload.view_number > replicas[r].view_number
                   /\  LET v == replicas[r].view_number
                           n == replicas[r].commit_number
@@ -342,8 +313,8 @@ BackupDoStateTransfer(r) ==
                       /\  replicas' = [replicas EXCEPT ![r].op_number = n,
                                                        ![r].log = l]
                       \* Note: The paper says `one` of the other replicas instead of the primary.
-                      /\  DiscardAndSend(msg, r, Primary(replicas[r].view_number), GetState(v, n, i))
-    /\  UNCHANGED <<clients, fsm>>
+                      /\  Send(r, Primary(replicas[r].view_number), GetState(v, n, i))
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 BackupReceiveNewState(r) ==
     /\  replicas[r].status = StatusNormal
@@ -354,8 +325,7 @@ BackupReceiveNewState(r) ==
           /\  replicas' = [replicas EXCEPT ![r].log = @ \o msg.payload.log,
                                            ![r].op_number = msg.payload.op_number,
                                            ![r].commit_number = msg.payload.commit_number]
-        /\  Discard(msg)
-    /\  UNCHANGED <<sent, clients, fsm>>
+    /\  UNCHANGED <<sent, msgs, clients, fsm>>
 
 BackupReceivePrepare(r) ==
     /\  IsBackup(r)
@@ -367,12 +337,13 @@ BackupReceivePrepare(r) ==
                 n == replicas[r].op_number + 1
                 i == r IN
             /\  replicas' = [replicas EXCEPT ![r].op_number = n,
+                                             ![r].commit_number = Max(@, msg.payload.commit_number),
                                              ![r].log = Append(@, msg.payload.op),
                                              ![r].client_table = [@ EXCEPT ![msg.payload.op.client_id].request_number = msg.payload.op.request_number,
                                                                            ![msg.payload.op.client_id].result = NULL]]
         
-            /\  DiscardAndSend(msg, r, msg.from, PrepareOk(v, n, i, msg.payload.op.client_id, msg.payload.op.request_number))
-    /\  UNCHANGED <<clients, fsm>>
+            /\  Send(r, msg.from, PrepareOk(v, n, i, msg.payload.op.client_id, msg.payload.op.request_number))
+    /\  UNCHANGED <<sent, clients, fsm>>
 
 BackupReceiveCommit(r) ==
     /\  IsBackup(r)
@@ -383,10 +354,9 @@ BackupReceiveCommit(r) ==
         /\  msg.payload.commit_number > replicas[r].commit_number /\ msg.payload.commit_number <= Len(replicas[r].log) 
         /\  LET entry == replicas[r].log[msg.payload.commit_number]
                 result == "TODO: upcall" IN 
-            replicas' = [replicas EXCEPT ![r].commit_number = @ + 1,
+            replicas' = [replicas EXCEPT ![r].commit_number = Max(@, msg.payload.commit_number),
                                          ![r].client_table = [@ EXCEPT ![entry.client_id].result = result]]
-        /\  Discard(msg)
-    /\ UNCHANGED <<sent, fsm, clients>>
+    /\ UNCHANGED <<sent, msgs, fsm, clients>>
 
 BackupSendStartViewChange(r) ==
     /\  IsBackup(r)
@@ -413,7 +383,7 @@ BackupReceiveStartViewChange(r) ==
                 /\  replicas' = [replicas EXCEPT ![r].status = StatusViewChange,
                                                  ![r].view_number = v,
                                                  ![r].last_normal_status_view_number = v_prime]
-                /\  DiscardAndBroadcast(msg, r, StartViewChange(v, i))
+                /\  Broadcast(r, StartViewChange(v, i))
     /\  UNCHANGED <<sent, clients, fsm>>
 
 BackupReceiveStartViewChangeFromMajority(r) ==
@@ -431,8 +401,8 @@ BackupReceiveStartViewChangeFromMajority(r) ==
         /\  Cardinality(received) >= F
         /\  ReceiveSet(r, MsgTypeStartViewChange, received)
         /\  Primary(v) /= r
-        /\  DiscardSetAndSend(received, r, Primary(v), DoViewChange(v, l, v_prime, n, k, i))
-    /\  UNCHANGED <<clients, fsm, replicas>>
+        /\  Send(r, Primary(v), DoViewChange(v, l, v_prime, n, k, i))
+    /\  UNCHANGED <<sent, clients, fsm, replicas>>
 
 BackupReceiveDoViewChange(r) ==
     /\  replicas[r].status \in {StatusNormal, StatusViewChange}
@@ -440,12 +410,13 @@ BackupReceiveDoViewChange(r) ==
             /\  Receive(r, MsgTypeDoViewChange, msg)
             /\  msg.payload.view_number > replicas[r].view_number
             /\  LET v_prime == replicas[r].view_number
+                \* TODO: should this be Max(view_numver + 1, msg.view_number)?
                 v == replicas[r].view_number + 1
                 i == r IN
                 /\  replicas' = [replicas EXCEPT ![r].status = StatusViewChange,
                                                  ![r].view_number = v,
                                                  ![r].last_normal_status_view_number = v_prime]
-                /\  DiscardAndBroadcast(msg, r, StartViewChange(v, i))
+                /\  Broadcast(r, StartViewChange(v, i))
     /\  UNCHANGED <<sent, clients, fsm>>
 
 LongestLog(messages) ==
@@ -494,9 +465,18 @@ BackupReceiveDoViewChangeFromMajority(r) ==
             /\  Broadcast(r, StartView(v, l, n, k))
     /\  UNCHANGED <<sent, clients, fsm>>
 
-\* TODO: After becoming primary -> primary must execute commited operations, update client table and send replies
+\* Backup sends PrepareOk for uncommitted operations
+BackupSendPrepareOk(r) ==
+    /\  IsBackup(r)
+    /\  replicas[r].op_number > replicas[r].commit_number
+    /\  LET v == replicas[r].view_number
+            \* Send PrepareOk for the first uncommitted operation
+            n == replicas[r].commit_number + 1
+            i == r
+            entry == replicas[r].log[n] IN            
+        Send(r, Primary(replicas[r].view_number), PrepareOk(v, n, i, entry.client_id, entry.request_number))
+    /\  UNCHANGED <<recv, clients, fsm, replicas, sent>>
 
-\* TODO: send prepare oks for non committed operations
 BackupReceiveStartView(r) ==
     /\  replicas[r].status \in {StatusNormal, StatusViewChange}
     /\  \E msg \in msgs:
@@ -507,8 +487,7 @@ BackupReceiveStartView(r) ==
                                              ![r].op_number = msg.payload.op_number,
                                              ![r].view_number = msg.payload.view_number,
                                              ![r].status = StatusNormal]
-            /\  Discard(msg)
-    /\  UNCHANGED <<sent, clients, fsm>>
+    /\  UNCHANGED <<sent, msgs, clients, fsm>>
 
 CrashAndRestartReplica(r) ==
     Assert(FALSE, "TODO")
@@ -535,6 +514,7 @@ Next ==
             \/  PrimaryReceivePrepareOkFromMajority(r)
             \/  PrimarySendCommit(r)
             \/  BackupReceivePrepare(r)
+            \/  BackupSendPrepareOk(r)
             \/  BackupDoStateTransfer(r)
             \/  BackupReceiveCommit(r)
             \/  BackupSendStartViewChange(r)
@@ -548,7 +528,28 @@ Next ==
             \/  BackupReceiveNewState(r)
             \/  ((\E x \in DOMAIN sent.replicas: sent.replicas[x].start_view_change_count > 1) => Assert(FALSE, "sent more than one svc")) /\ UNCHANGED vars
 
-Spec == Init /\ [][Next]_vars
+Fairness ==
+    /\  \A client_id \in Clients:
+            WF_vars(ClientSendRequest(client_id))
+    /\  \A r \in Replicas:
+            /\  WF_vars(PrimaryReceiveRequest(r))
+            /\  WF_vars(PrimaryReceivePrepareOkFromMajority(r))
+            /\  WF_vars(PrimarySendCommit(r))
+            /\  WF_vars(BackupReceivePrepare(r))
+            /\  WF_vars(BackupSendPrepareOk(r))
+            /\  WF_vars(BackupDoStateTransfer(r))
+            /\  WF_vars(BackupReceiveCommit(r))
+            /\  WF_vars(BackupSendStartViewChange(r))
+            /\  WF_vars(BackupReceiveStartViewChange(r))
+            /\  WF_vars(BackupReceiveStartViewChangeFromMajority(r))
+            /\  WF_vars(BackupReceiveDoViewChange(r))
+            /\  WF_vars(BackupReceiveDoViewChangeFromMajority(r))
+            /\  WF_vars(BackupReceiveStartView(r))
+            /\  WF_vars(BackupReceiveGetState(r))
+            /\  WF_vars(BackupDoStateTransfer(r))
+            /\  WF_vars(BackupReceiveNewState(r))
+
+Spec == Init /\ [][Next]_vars /\ Fairness
 
 ----
 
@@ -562,7 +563,14 @@ CommittedEntriesAreReplicatedInMajority ==
                       /\  Len(replicas[r2].log) >= i
                       /\  replicas[r2].log[i] = replicas[r1].log[i]}) >= Majority,
                     <<"CommittedEntriesAreReplicatedInMajority: committed log entry is not replicated on majority", "replica", r1, "entry", replicas[r1].log[i]>>
-                  )
+                  )      
+
+LogConvergence ==
+    \A r1, r2 \in Replicas:
+      replicas[r1].log = replicas[r2].log
+
+EventuallyLogConvergence ==
+    []<>(LogConvergence)
 
 \* TODO: more invariants
 \* TODO: eventually
