@@ -25,6 +25,7 @@ MsgTypeNewState == "new_state"
 
 StatusNormal == "normal"
 StatusViewChange == "view_change"
+StatusRecovering == "recovering"
 
 ReplicaInitialState == [
     view_number |-> 0,
@@ -41,6 +42,7 @@ EmptyRecord == [x \in {} |-> 0]
 Init ==
     /\  recv = EmptyRecord
     /\  sent = [
+          num_replica_crashes |-> 0,
           replicas |-> [r \in Replicas |-> [start_view_change_count |-> 0, num_primary_commit_sent |-> 0]],
           clients |-> [c \in Clients |-> [num_requests_sent |-> 0]]
         ]
@@ -258,7 +260,7 @@ PrimaryReceivePrepareOkFromMajority(r) ==
             \* TODO: incrementing by 1 is probably wrong
             /\  replicas' = [replicas EXCEPT ![r].commit_number = @ + 1]
             /\  Send(r, msg.payload.client_id, Reply(v, s, x))
-    /\ UNCHANGED <<sent, clients>>
+    /\ UNCHANGED <<sent, fsm, clients>>
 
 PrimaryExecuteCommittedOperations(r) ==
   \* TODO: After becoming primary -> primary must execute commited operations, update client table and send replies
@@ -351,10 +353,10 @@ BackupReceiveCommit(r) ==
     /\  \E msg \in msgs:
         /\  Receive(r, MsgTypeCommit, msg)
         \* TODO: remove me, added for debugging
-        /\  msg.payload.commit_number > replicas[r].commit_number /\ msg.payload.commit_number <= Len(replicas[r].log) 
+        /\  msg.payload.commit_number > replicas[r].commit_number
         /\  LET entry == replicas[r].log[msg.payload.commit_number]
                 result == "TODO: upcall" IN 
-            replicas' = [replicas EXCEPT ![r].commit_number = Max(@, msg.payload.commit_number),
+            replicas' = [replicas EXCEPT ![r].commit_number = msg.payload.commit_number,
                                          ![r].client_table = [@ EXCEPT ![entry.client_id].result = result]]
     /\ UNCHANGED <<sent, msgs, fsm, clients>>
 
@@ -490,13 +492,16 @@ BackupReceiveStartView(r) ==
     /\  UNCHANGED <<sent, msgs, clients, fsm>>
 
 CrashAndRestartReplica(r) ==
-    Assert(FALSE, "TODO")
+    /\  sent.num_replica_crashes < F
+    /\  LET replica == [ReplicaInitialState EXCEPT !.status = StatusRecovering] IN
+        replicas' = [replicas EXCEPT ![r] = replica]
+    /\  sent' = [sent EXCEPT !.num_replica_crashes = @ + 1]
+    /\  UNCHANGED <<recv, clients, fsm, msgs>>
 
 ClientSendRequest(client_id) ==
-    /\  LET num_requests_sent == sent.clients[client_id].num_requests_sent
-            request_number == num_requests_sent + 1
+    /\  LET request_number == sent.clients[client_id].num_requests_sent + 1
             op == [type |-> "op", v |-> request_number] IN
-        /\  num_requests_sent < NumOps
+        /\  sent.clients[client_id].num_requests_sent < NumOps
         /\  sent' = [sent EXCEPT !.clients[client_id].num_requests_sent = @ + 1]
         /\  Send(client_id, Primary(clients[client_id].view_number), Request(op, client_id, request_number))
     /\  UNCHANGED <<recv, clients, fsm, replicas>>
@@ -510,22 +515,26 @@ Next ==
     \/  \E client_id \in Clients:
             ClientSendRequest(client_id)
     \/  \E r \in Replicas:
+            \* Normal
             \/  PrimaryReceiveRequest(r)
             \/  PrimaryReceivePrepareOkFromMajority(r)
             \/  PrimarySendCommit(r)
             \/  BackupReceivePrepare(r)
             \/  BackupSendPrepareOk(r)
-            \/  BackupDoStateTransfer(r)
             \/  BackupReceiveCommit(r)
+            \* State transfer
+            \/  BackupDoStateTransfer(r)
+            \/  BackupReceiveGetState(r)
+            \/  BackupReceiveNewState(r)
+            \* View change
             \/  BackupSendStartViewChange(r)
             \/  BackupReceiveStartViewChange(r)
             \/  BackupReceiveStartViewChangeFromMajority(r)
             \/  BackupReceiveDoViewChange(r)
             \/  BackupReceiveDoViewChangeFromMajority(r)
             \/  BackupReceiveStartView(r)
-            \/  BackupReceiveGetState(r)
-            \/  BackupDoStateTransfer(r)
-            \/  BackupReceiveNewState(r)
+            \* Fault injection
+            \/  CrashAndRestartReplica(r)
             \/  ((\E x \in DOMAIN sent.replicas: sent.replicas[x].start_view_change_count > 1) => Assert(FALSE, "sent more than one svc")) /\ UNCHANGED vars
 
 Fairness ==
@@ -553,6 +562,8 @@ Spec == Init /\ [][Next]_vars /\ Fairness
 
 ----
 
+\* TODO: given replicas {A, B, C}
+\* this won't hold if entry is replicated on {A, B} and B crashes
 CommittedEntriesAreReplicatedInMajority ==
     \A r1 \in Replicas:
         \A i \in 1..Len(replicas[r1].log):
