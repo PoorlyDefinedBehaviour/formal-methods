@@ -5,9 +5,9 @@ CONSTANTS NULL, NumReplicas, Clients, NumOps, MaxStartViewChangePerReplica, MaxM
 
 ASSUME NumReplicas \in Nat /\ NumReplicas >= 3
 
-VARIABLES recv, sent, msgs, fsm, replicas, clients
+VARIABLES majority_history, recv, sent, msgs, fsm, replicas, clients
 
-vars == <<recv, sent, msgs, fsm, replicas, clients>>
+vars == <<majority_history, recv, sent, msgs, fsm, replicas, clients>>
 view == <<msgs, fsm, replicas, clients>>
 
 Replicas == 1..NumReplicas
@@ -22,6 +22,8 @@ MsgTypeDoViewChange == "do_view_change"
 MsgTypeStartView == "start_view"
 MsgTypeGetState == "get_state"
 MsgTypeNewState == "new_state"
+MsgTypeRecovery == "recovery"
+MsgTypeRecoveryResponse == "recovery_response"
 
 StatusNormal == "normal"
 StatusViewChange == "view_change"
@@ -34,7 +36,8 @@ ReplicaInitialState == [
     op_number |-> 0,
     log |-> <<>>,
     commit_number |-> 0,
-    client_table |-> [c \in Clients |-> [request_number |-> 0, op |-> NULL, result |-> NULL]]
+    client_table |-> [c \in Clients |-> [request_number |-> 0, op |-> NULL, result |-> NULL]],
+    last_applied |-> 0
 ]
 
 EmptyRecord == [x \in {} |-> 0]
@@ -200,6 +203,24 @@ GetState(view_number, op_number, replica) ==
         replica |-> replica
     ]
 
+Recovery(replica, nonce) ==
+    [
+        type |-> MsgTypeRecovery,
+        replica |-> replica,
+        nonce |-> nonce
+    ]
+
+RecoveryResponse(view_number, nonce, log, op_number, commit_number, replica) ==
+    [
+        type |-> MsgTypeRecoveryResponse,
+        view_number |-> view_number,
+        nonce |-> nonce,
+        log |-> log,
+        op_number |-> op_number,
+        commit_number |-> commit_number,
+        replica |-> replica
+    ]
+
 Max(a, b) == IF a >= b THEN a ELSE b
 
 ----
@@ -235,6 +256,7 @@ PrimaryReceiveRequest(r) ==
                         /\  replicas' = [replicas EXCEPT ![r].op_number = n,
                                                          ![r].log = Append(@, m),
                                                          ![r].client_table = [@ EXCEPT ![client_id].request_number = request_number,
+                                                                                       ![client_id].op = op,
                                                                                        ![client_id].result = NULL]]
                         /\  Broadcast(r, Prepare(v, m, n, k))
     /\ UNCHANGED <<sent, clients, fsm>>
@@ -262,9 +284,14 @@ PrimaryReceivePrepareOkFromMajority(r) ==
             /\  Send(r, msg.payload.client_id, Reply(v, s, x))
     /\ UNCHANGED <<sent, fsm, clients>>
 
-PrimaryExecuteCommittedOperations(r) ==
-  \* TODO: After becoming primary -> primary must execute commited operations, update client table and send replies
-    /\  IsPrimary(r)
+BackupExecuteCommittedOperations(r) ==
+    /\  replicas[r].status = StatusNormal
+    /\  replicas[r].last_applied < replicas[r].commit_number
+    /\  replicas[r].last_applied < Len(replicas[r].log)
+    /\  LET n == replicas[r].last_applied + 1 IN
+        /\  fsm' = [fsm EXCEPT ![r] = Append(@, replicas[r].log[n])]
+        /\  replicas' = [replicas EXCEPT ![r].last_applied = n]
+    /\  UNCHANGED <<recv, sent, clients, msgs>>
 
 \* Timeout fires and the primary broadcasts Commit messages.
 PrimarySendCommit(r) ==
@@ -321,23 +348,29 @@ BackupDoStateTransfer(r) ==
 BackupReceiveNewState(r) ==
     /\  replicas[r].status = StatusNormal
     /\  \E msg \in msgs:
-          /\  Receive(r, MsgTypeNewState, msg)
-          /\  msg.payload.view_number = replicas[r].view_number
-          /\  msg.payload.min_op_number > Len(replicas[r].log)
-          /\  replicas' = [replicas EXCEPT ![r].log = @ \o msg.payload.log,
-                                           ![r].op_number = msg.payload.op_number,
-                                           ![r].commit_number = msg.payload.commit_number]
+            /\  Receive(r, MsgTypeNewState, msg)
+            /\  msg.payload.view_number = replicas[r].view_number
+            /\  msg.payload.min_op_number > Len(replicas[r].log)
+            /\  replicas' = [replicas EXCEPT ![r].log = @ \o msg.payload.log,
+                                             ![r].op_number = msg.payload.op_number,
+                                             ![r].commit_number = msg.payload.commit_number]
+        
     /\  UNCHANGED <<sent, msgs, clients, fsm>>
+
+IsReplicatedOnMajority(op, op_number) == 
+    Cardinality({r \in Replicas: 
+        /\  Len(replicas[r].log) >= op_number
+        /\  replicas[r].log[op_number] = op}) >= Majority
 
 BackupReceivePrepare(r) ==
     /\  IsBackup(r)
     /\  replicas[r].status = StatusNormal
     /\  \E msg \in msgs:
         /\  Receive(r, MsgTypePrepare, msg)
-        /\  msg.payload.op_number = replicas[r].op_number + 1
         /\  LET v == replicas[r].view_number
                 n == replicas[r].op_number + 1
                 i == r IN
+            /\  msg.payload.op_number = n
             /\  replicas' = [replicas EXCEPT ![r].op_number = n,
                                              ![r].commit_number = Max(@, msg.payload.commit_number),
                                              ![r].log = Append(@, msg.payload.op),
@@ -345,19 +378,15 @@ BackupReceivePrepare(r) ==
                                                                            ![msg.payload.op.client_id].result = NULL]]
         
             /\  Send(r, msg.from, PrepareOk(v, n, i, msg.payload.op.client_id, msg.payload.op.request_number))
-    /\  UNCHANGED <<sent, clients, fsm>>
+    /\  UNCHANGED <<clients, fsm>>
 
 BackupReceiveCommit(r) ==
     /\  IsBackup(r)
     /\  replicas[r].status = StatusNormal
     /\  \E msg \in msgs:
         /\  Receive(r, MsgTypeCommit, msg)
-        \* TODO: remove me, added for debugging
         /\  msg.payload.commit_number > replicas[r].commit_number
-        /\  LET entry == replicas[r].log[msg.payload.commit_number]
-                result == "TODO: upcall" IN 
-            replicas' = [replicas EXCEPT ![r].commit_number = msg.payload.commit_number,
-                                         ![r].client_table = [@ EXCEPT ![entry.client_id].result = result]]
+        /\  replicas' = [replicas EXCEPT ![r].commit_number = msg.payload.commit_number]
     /\ UNCHANGED <<sent, msgs, fsm, clients>>
 
 BackupSendStartViewChange(r) ==
@@ -380,7 +409,7 @@ BackupReceiveStartViewChange(r) ==
             /\  Receive(r, MsgTypeStartViewChange, msg)
             /\  msg.payload.view_number > replicas[r].view_number
             /\  LET v_prime == replicas[r].view_number
-                v == replicas[r].view_number + 1
+                v == msg.payload.view_number
                 i == r IN
                 /\  replicas' = [replicas EXCEPT ![r].status = StatusViewChange,
                                                  ![r].view_number = v,
@@ -412,8 +441,7 @@ BackupReceiveDoViewChange(r) ==
             /\  Receive(r, MsgTypeDoViewChange, msg)
             /\  msg.payload.view_number > replicas[r].view_number
             /\  LET v_prime == replicas[r].view_number
-                \* TODO: should this be Max(view_numver + 1, msg.view_number)?
-                v == replicas[r].view_number + 1
+                v == msg.payload.view_number 
                 i == r IN
                 /\  replicas' = [replicas EXCEPT ![r].status = StatusViewChange,
                                                  ![r].view_number = v,
@@ -488,12 +516,54 @@ BackupReceiveStartView(r) ==
                                             \* as the index of the last entry in the log?
                                              ![r].op_number = msg.payload.op_number,
                                              ![r].view_number = msg.payload.view_number,
+                                             ![r].commit_number = msg.payload.commit_number,
                                              ![r].status = StatusNormal]
     /\  UNCHANGED <<sent, msgs, clients, fsm>>
 
+NextRecoveryMessageUniqueNumber(r) ==
+    Cardinality({msg.payload.nonce: msg \in {msg \in msgs: msg.from = r /\ msg.payload.type = MsgTypeRecovery}})
+
+LatestRecoveryMessageUniqueNumber(r) == NextRecoveryMessageUniqueNumber(r) - 1
+
+BackupSendRecovery(r) ==
+    /\  replicas[r].status = StatusRecovering
+    /\  LET i == r
+            x == NextRecoveryMessageUniqueNumber(r) IN
+        Broadcast(r, Recovery(i, x))
+    /\  UNCHANGED <<recv, sent, clients, fsm, replicas>>
+
+BackupReceiveRecovery(r) ==
+    /\  replicas[r].status = StatusNormal
+    /\  \E msg \in msgs:
+            /\  Receive(r, MsgTypeRecovery, msg)
+            /\  LET v == replicas[r].view_number
+                    x == msg.payload.nonce
+                    l == IF IsPrimary(r) THEN replicas[r].log ELSE NULL
+                    n == IF IsPrimary(r) THEN replicas[r].op_number ELSE NULL
+                    k == IF IsPrimary(r) THEN replicas[r].commit_number ELSE NULL
+                    j == r IN
+                Send(r, msg.from, RecoveryResponse(v, x, l, n, k, j))
+    /\  UNCHANGED <<sent, clients, fsm, replicas>>
+
+BackupReceiveRecoveryResponseFromMajority(r) ==
+    /\  replicas[r].status = StatusRecovering
+    /\  LET responses == {msg \in msgs: msg.payload.type = MsgTypeRecoveryResponse /\ msg.payload.nonce = LatestRecoveryMessageUniqueNumber(r)} IN
+        /\  Cardinality(responses) >= Majority
+        /\  LET largest_view_number == LargestViewNumber(responses)
+                received_message_from_primary == \E msg \in responses: msg.from = Primary(largest_view_number) IN
+            /\  received_message_from_primary
+            /\  ReceiveSet(r, MsgTypeRecoveryResponse, responses)
+            /\  LET msg_from_primary == CHOOSE msg \in responses: msg.from = Primary(largest_view_number) IN
+                replicas' = [replicas EXCEPT ![r].view_number = msg_from_primary.view_number,
+                                             ![r].log = msg_from_primary.log,
+                                             ![r].op_number = msg_from_primary.op_number,
+                                             ![r].commit_number = msg_from_primary.commit_number,
+                                             ![r].status = StatusNormal]
+
 CrashAndRestartReplica(r) ==
     /\  sent.num_replica_crashes < F
-    /\  LET replica == [ReplicaInitialState EXCEPT !.status = StatusRecovering] IN
+    /\  LET durable_state == [last_applied |-> replicas[r].last_applied]
+            replica == durable_state @@ [ReplicaInitialState EXCEPT !.status = StatusRecovering] IN
         replicas' = [replicas EXCEPT ![r] = replica]
     /\  sent' = [sent EXCEPT !.num_replica_crashes = @ + 1]
     /\  UNCHANGED <<recv, clients, fsm, msgs>>
@@ -511,7 +581,7 @@ ClientRequestTimeoutSendToAllReplicas(client_id) ==
 
 ----
 
-Next ==
+Actions ==
     \/  \E client_id \in Clients:
             ClientSendRequest(client_id)
     \/  \E r \in Replicas:
@@ -522,6 +592,7 @@ Next ==
             \/  BackupReceivePrepare(r)
             \/  BackupSendPrepareOk(r)
             \/  BackupReceiveCommit(r)
+            \/  BackupExecuteCommittedOperations(r)
             \* State transfer
             \/  BackupDoStateTransfer(r)
             \/  BackupReceiveGetState(r)
@@ -533,9 +604,27 @@ Next ==
             \/  BackupReceiveDoViewChange(r)
             \/  BackupReceiveDoViewChangeFromMajority(r)
             \/  BackupReceiveStartView(r)
+            \*  Recovery
+            \/  BackupSendRecovery(r)
+            \/  BackupReceiveRecovery(r)
+            \/  BackupReceiveRecoveryResponseFromMajority(r)
             \* Fault injection
             \/  CrashAndRestartReplica(r)
-            \/  ((\E x \in DOMAIN sent.replicas: sent.replicas[x].start_view_change_count > 1) => Assert(FALSE, "sent more than one svc")) /\ UNCHANGED vars
+
+UpdateHistory ==
+    IF replicas' = replicas
+    THEN UNCHANGED majority_history
+    ELSE
+        LET majority == {[op |-> replicas[r].log[i], index |-> i]>>: 
+                            /\  r \in Replicas
+                            /\  i \in DOMAIN replicas[r].log
+                            /\  IsReplicatedOnMajority(replicas[r].log[i], i)} IN
+        majority_history' = majority_history \union majority
+
+
+MetaActions == UpdateHistory
+
+Next == Actions /\ MetaActions
 
 Fairness ==
     /\  \A client_id \in Clients:
@@ -562,19 +651,36 @@ Spec == Init /\ [][Next]_vars /\ Fairness
 
 ----
 
+EntriesReplicatedOnMajorityAreNeverLost ==
+    \A h \in majority_history:
+        \E r \in Replicas:
+            /\  Len(replicas[r].log) >= h.index
+            /\  replicas[r].log[h.index] = h.op
+        
+
+\* PropEntriesReplicatedOnMajorityAreNeverLost ==
+\*     [][
+\*         \A r1 \in Replicas:
+\*             \A i \in DOMAIN replicas[r1].log:
+\*                 IsReplicatedOnMajority(replicas[r1].log[i], i) => 
+\*                     (\E r2 \in Replicas: 
+\*                         /\  Len(replicas[r2]'.log) >= i
+\*                         /\  replicas[r2]'.log[i] = replicas[r1].log[i])
+\*       ]_replicas
+
 \* TODO: given replicas {A, B, C}
 \* this won't hold if entry is replicated on {A, B} and B crashes
-CommittedEntriesAreReplicatedInMajority ==
-    \A r1 \in Replicas:
-        \A i \in 1..Len(replicas[r1].log):
-            i <= replicas[r1].commit_number
-                =>
-                  Assert(
-                    Cardinality({r2 \in Replicas: 
-                      /\  Len(replicas[r2].log) >= i
-                      /\  replicas[r2].log[i] = replicas[r1].log[i]}) >= Majority,
-                    <<"CommittedEntriesAreReplicatedInMajority: committed log entry is not replicated on majority", "replica", r1, "entry", replicas[r1].log[i]>>
-                  )      
+\* CommittedEntriesAreReplicatedInMajority ==
+\*     \A r1 \in Replicas:
+\*         \A i \in 1..Len(replicas[r1].log):
+\*             i <= replicas[r1].commit_number
+\*                 =>
+\*                   Assert(
+\*                     Cardinality({r2 \in Replicas: 
+\*                       /\  Len(replicas[r2].log) >= i
+\*                       /\  replicas[r2].log[i] = replicas[r1].log[i]}) >= Majority,
+\*                     <<"CommittedEntriesAreReplicatedInMajority: committed log entry is not replicated on majority", "replica", r1, "entry", replicas[r1].log[i]>>
+\*                   )      
 
 LogConvergence ==
     \A r1, r2 \in Replicas:
