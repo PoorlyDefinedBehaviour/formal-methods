@@ -713,4 +713,7 @@ LogConvergence ==
 EventuallyLogConvergence ==
     []<>(LogConvergence)
 
+
+MaxLevel == TLCGet("level") <= 12
+
 ====
