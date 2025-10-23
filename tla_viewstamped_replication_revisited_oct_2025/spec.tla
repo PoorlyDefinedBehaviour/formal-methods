@@ -368,8 +368,7 @@ BackupDoStateTransfer(r) ==
                       \* Note: The paper says `one` of the other replicas instead of the primary.
                       /\  Send(r, Primary(v), GetState(v, n, i))
               \/  /\  msg.payload.view_number > replicas[r].view_number
-                  /\  LET v == replicas[r].view_number
-                          n == replicas[r].commit_number
+                  /\  LET n == replicas[r].commit_number
                           l == IF n = 0 THEN <<>> ELSE SubSeq(replicas[r].log, 1, n)
                           i == r IN 
                       /\  replicas' = [replicas EXCEPT ![r].op_number = n,
