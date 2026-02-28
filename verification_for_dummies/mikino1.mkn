@@ -1,0 +1,22 @@
+svars {
+  start_stop reset: bool,
+  is_counting: bool,
+  cnt: int,
+}
+
+init {
+  is_counting = start_stop,
+  cnt >= 0,
+  (reset => cnt = 0),
+}
+
+trans {
+  'is_counting = if 'start_stop { ¬is_counting } else { is_counting },
+  'cnt = if 'reset { 0 } else if 'is_counting { cnt + 1 } else { cnt },
+}
+
+candidates {
+  "cnt is positive": cnt >= 0,
+  "cnt <= 2": cnt <= 2,
+  "cnt <= 4": cnt <= 4,
+}
